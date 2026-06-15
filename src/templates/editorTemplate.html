@@ -1,0 +1,482 @@
+<div class="editor-container">
+    <!-- WELCOME SPLASH SCREEN -->
+    <section id="welcome-splash-shell" class="splash-panel">
+        <div class="splash-container">
+            <div class="splash-header">
+                <div class="app-title">
+                    <div class="app-name">
+                        <svg><use href="#icon-logo"/></svg>
+                        Voltaira
+                    </div> 
+                </div>
+                <div class="splash-instructions">
+                    <span class="splash-greetings">Hi <span id="splash-username">User</span>,</span>
+                    <span>It's nice to see you!</span>
+                    <span>What would you like to do today?</span>
+                </div>
+            </div>
+            <!-- Sub-State 1: Default Action Buttons -->
+            <div class="splash-options" id="splash-default-options">
+                <div class="splash-button" id="splash-create">
+                    CREATE
+                    <svg><use href="#icon-create"/></svg>
+                </div>
+                <div class="splash-button" id="splash-open">
+                    OPEN
+                    <svg><use href="#icon-open-file"/></svg>
+                </div>
+            </div>
+            <!-- Sub-State 2: Inline Note Picker (Hidden by default) -->
+            <div class="splash-picker" id="splash-note-picker" data-is-hidden="true">
+                <span class="splash-list-instruction">Select a note to open:</span>
+                <div id="splash-notes-list" class="splash-menu-list">
+                    <!-- Dynamic note records injected here via JS -->
+                </div>
+                <button id="splash-picker-back" class="back-btn">
+                    <svg><use href="#icon-back"/></svg>
+                    Back to main options
+                </button>
+            </div>
+            <div class="splash-logout">
+                <button id="splash-logout-btn" class="logout-btn">
+                    <svg><use href="#icon-logout"/></svg>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- EDITOR WORSPACE -->
+    <section id="editor-workspace-shell" class="canvas-panel" data-is-hidden="true">
+        <!-- HEADER ----------------------------------------------------------------->
+        <div class="header">
+            <!-- LOGO -->
+            <div id="logo-container">VOLTAIRA</div>
+            <!-- MENU -->
+            <div id="header-main">
+                <!-- Main options -->
+                <div class="main-menu">
+                    <div class="menu-option" id="menu-file" data-is-selected>File</div>
+                    <div class="menu-option" id="menu-tools">Tools</div>
+                    <div class="menu-option" id="menu-settings">Settings</div>
+                    <div class="menu-option" id="menu-help">Help</div>
+                    <div class="menu-dropdown" id="menu-profile">
+                        Profile
+                        <div class="profile-options" id="profile-options">
+                            <button id="delete-account-btn">Delete account</button>
+                        </div>
+                    </div>
+                    <button id="logout-btn">Log out</button>
+                </div>
+                <!-- Submenu -->
+                <div id="sub-menu">
+                    <!-- Will be dynamically populated by javascript -->
+                    <!-- Default: File submenu -->
+                    <!-- FILE SUBMENU -->
+                    <div class="sub-menu-wrapper" id="sub-file" data-is-visible>
+                        <!-- FILE MODULE -->
+                        <div class="sub-module">
+                            <span class="module-title">FILE</span>
+                            <div class="module-content">
+                                <div class="module-unit">
+                                    <span class="module-unit-title">Create</span>
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option" id="file-create">
+                                            <svg><use href="#icon-create"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="create-info">Option info</span>
+                                </div>
+                                <div class="module-unit">
+                                    <span class="module-unit-title">Open</span>
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option" id="file-open-file">
+                                            <svg><use href="#icon-open-file"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="file-open-folder">
+                                            <svg><use href="#icon-open-folder"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="open-info">Option info</span>
+                                </div>
+                                <div class="module-unit">
+                                    <span class="module-unit-title">Save</span>
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option" id="file-save">
+                                            <svg><use href="#icon-save"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="save-info">Option info</span>
+                                </div>
+                                <div class="module-unit">
+                                    <span class="module-unit-title">Export</span>
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option" id="file-export-md">
+                                            <svg><use href="#icon-export-md"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="file-export-pdf">
+                                            <svg><use href="#icon-export-pdf"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="export-info">Option info</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- EDIT MODULE -->
+                        <div class="sub-module middle-module">
+                            <span class="module-title">EDIT</span>
+                            <div class="module-content">
+                                <div class="module-unit">
+                                    <span class="module-unit-title">Undo/Redo</span>
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option" id="edit-undo">
+                                            <svg><use href="#icon-undo"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="edit-redo">
+                                            <svg><use href="#icon-redo"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="redo-info">Option info</span>
+                                </div>
+                                <div class="module-unit">
+                                    <span class="module-unit-title">Clipboard</span>
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option" id="edit-cut">
+                                            <svg><use href="#icon-cut"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="edit-copy">
+                                            <svg><use href="#icon-copy"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="edit-paste">
+                                            <svg><use href="#icon-paste"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="clipboard-info">Option info</span>
+                                </div>
+                                <div class="module-unit">
+                                    <span class="module-unit-title">Search</span>
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option" id="edit-find">
+                                            <svg><use href="#icon-find"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="edit-replace">
+                                            <svg><use href="#icon-replace"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="search-info">Option info</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- SELECTION MODULE -->
+                        <div class="sub-module">
+                            <span class="module-title">SELECTION</span>
+                            <div class="module-content">
+                                <div class="module-unit">
+                                    <span class="module-unit-title">Select</span>
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option" id="select-all">
+                                            <svg><use href="#icon-select"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="select-occurences">
+                                            <svg><use href="#icon-occurences"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="select-info">Option info</span>
+                                </div>
+                                <div class="module-unit">
+                                    <span class="module-unit-title">Move</span>
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option" id="select-move-up">
+                                            <svg><use href="#icon-move-up"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="select-move-down">
+                                            <svg><use href="#icon-move-down"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="move-info">Option info</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- TOOLS SUBMENU -->
+                    <div class="sub-menu-wrapper" id="sub-tools">
+                        <!-- TEXT MODULE -->
+                        <div class="sub-module">
+                            <span class="module-title">TEXT</span>
+                            <div class="module-content">
+                                <div class="module-unit">
+                                    <span class="module-unit-title">Style</span>
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option" id="style-bold">
+                                            <svg><use href="#icon-bold"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="style-italic">
+                                            <svg><use href="#icon-italic"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="style-underline">
+                                            <svg><use href="#icon-underline"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="style-strike">
+                                            <svg><use href="#icon-strike"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="style-info">Option info</span>
+                                </div>
+                                <div class="module-unit">
+                                    <span class="module-unit-title">Effects</span>
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option" id="effects-subscript">
+                                            <svg><use href="#icon-subscript"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="effects-superscript">
+                                            <svg><use href="#icon-superscript"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="effects-info">Option info</span>
+                                </div>
+                                <div class="module-unit">
+                                    <span class="module-unit-title">Format</span>
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option" id="format-header">
+                                            <svg><use href="#icon-header"/></svg>
+                                            <div class="header-sub-options" id="header-options">
+                                                <div class="header-sub-option" id="header-h1">
+                                                    <svg><use href="#icon-h1"/></svg>
+                                                </div>
+                                                <div class="header-sub-option" id="header-h2">
+                                                    <svg><use href="#icon-h2"/></svg>
+                                                </div>
+                                                <div class="header-sub-option" id="header-h3">
+                                                    <svg><use href="#icon-h3"/></svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="module-subunit-option" id="format-link">
+                                            <svg><use href="#icon-link"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="format-u-list">
+                                            <svg><use href="#icon-ulist"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="format-o-list">
+                                            <svg><use href="#icon-olist"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option" id="format-inline-code">
+                                            <svg><use href="#icon-inlinecode"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="format-info">Option info</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- INSERT MODULE -->
+                        <div class="sub-module right-module">
+                            <span class="module-title">INSERT</span>
+                            <div class="module-content large-module">
+                                <div class="module-unit">
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option large" id="insert-table">
+                                            <svg><use href="#icon-table"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option large" id="insert-picture">
+                                            <svg><use href="#icon-picture"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option large" id="insert-codeblock">
+                                            <svg><use href="#icon-codeblock"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option large" id="insert-quote">
+                                            <svg><use href="#icon-quote"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option large" id="insert-divider">
+                                            <svg><use href="#icon-divider"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="insert-info">Option info</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- SETTINGS SUBMENU -->
+                    <div class="sub-menu-wrapper" id="sub-settings">
+                        <!-- MODE MODULE -->
+                        <div class="sub-module">
+                            <span class="module-title">MODE</span>
+                            <div class="module-content">
+                            </div>
+                        </div>
+                        <!-- THEME MODULE -->
+                        <div class="sub-module right-module">
+                            <span class="module-title">THEME</span>
+                            <div class="module-content">
+                            </div>
+                        </div>
+                        <!-- OPTIONS MODULE -->
+                        <div class="sub-module middle-module">
+                            <span class="module-title">OPTIONS</span>
+                            <div class="module-content">
+                            </div>
+                        </div>
+                        <!-- VIEW MODULE -->
+                        <div class="sub-module">
+                            <span class="module-title">VIEW</span>
+                            <div class="module-content large-module">
+                                <div class="module-unit">
+                                    <div class="module-subunit">
+                                        <div class="module-subunit-option large view-btn is-active" id="settings-view-md">
+                                            <svg><use href="#icon-view-md"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option large view-btn" id="settings-view-split">
+                                            <svg><use href="#icon-view-split"/></svg>
+                                        </div>
+                                        <div class="module-subunit-option large view-btn" id="settings-view-preview">
+                                            <svg><use href="#icon-preview"/></svg>
+                                        </div>
+                                    </div>
+                                    <span class="module-option-info" id="settings-view-info">Option info</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- HELP SUBMENU -->
+                    <div class="sub-menu-wrapper" id="sub-help">
+                        <!-- HELP MODULE -->
+                        <div class="sub-module">
+                            <span class="module-title">HELP</span>
+                            <div class="module-content">
+                            </div>
+                        </div>
+                        <!-- ABOUT MODULE -->
+                        <div class="sub-module right-module">
+                            <span class="module-title">ABOUT</span>
+                            <div class="module-content">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- BODY -------------------------------------------------------------------->
+        <div class="body">
+            <!-- SIDE TABS -->
+            <aside id="side-menu">
+                <!-- Tabs options -->
+                <div class="tabs-options">
+                    <div class="tab-option" id="tab-explorer">
+                        <svg id="svg-explorer"><use href="#icon-explorer"/></svg>
+                        <div class="tooltip" id="tooltip-explorer">File Explorer</div>
+                    </div>
+                    <div class="tab-option" id="tab-toc">
+                        <svg id="svg-toc"><use href="#icon-toc"/></svg>
+                        <div class="tooltip" id="tooltip-toc">Table of Content</div>
+                    </div>
+                    <div class="tab-option" id="tab-links">
+                        <svg id="svg-links"><use href="#icon-links"/></svg>
+                        <div class="tooltip" id="tooltip-links">Links</div>
+                    </div>
+                    <div class="tab-option" id="tab-graph">
+                        <svg id="svg-graph"><use href="#icon-graph"/></svg>
+                        <div class="tooltip" id="tooltip-graph">Graph View</div>
+                    </div>
+                    <div class="tab-option" id="tab-tags">
+                        <svg id="svg-tags"><use href="#icon-tags"/></svg>
+                        <div class="tooltip" id="tooltip-tags">Tags & Filtering</div>
+                    </div>
+                    <div class="tab-option" id="tab-md">
+                        <svg id="svg-md"><use href="#icon-md"/></svg>
+                        <div class="tooltip" id="tooltip-md">Markdown Common Tags</div>
+                    </div>
+                </div>
+                <!-- TAB DISPLAY -->
+                <div class="tabs-display" id="tabs-display">
+                    <!-- Will be dynamically shown and populated by javascript -->
+                    <!-- Default: Hidden -->
+                    <!-- -- File Explorer -- -->
+                    <div class="tab-wrapper" id="explorer-wrapper" data-is-hidden="true">
+                        <div class="tab-title">Explorer</div>
+                        <div id="explorer-filter-panel">
+                            <span class="subtitle">Filter by Tag</span>
+                            <div class="tag-management-pool" id="explorer-available-tags"></div>
+                            <span class="subtitle">Active Filters</span>
+                            <div class="tag-management-pool" id="explorer-active-filters"></div>
+                        </div>
+                        <div class="tab-container" id="explorer-container"></div>
+                        <!-- Dynamic folder tree item links will toggle into here -->
+                    </div>
+                    <!-- -- Table of Content (TOC) -- -->
+                    <div class="tab-wrapper" id="toc-wrapper" data-is-hidden="true">
+                        <div class="tab-title">Table of Content</div>
+                        <div class="tab-container" id="toc-container"></div>
+                        <!-- Dynamic header item links will toggle into here -->
+                    </div>
+                    <!-- -- Links -- -->
+                    <div class="tab-wrapper" id="links-wrapper" data-is-hidden="true">
+                        <div class="tab-title">Links to Notes</div>
+                        <div class="tab-container" id="links-container"></div>
+                        <!-- Dynamic link item links will toggle into here -->
+                    </div>
+                    <!-- -- Graph View -- -->
+                    <div class="tab-wrapper" id="graph-wrapper" data-is-hidden="true">
+                        <div class="tab-title">Graph View</div>
+                        <div class="tab-container" id="graph-container"></div>
+                        <!-- Dynamic graph view will toggle into here -->
+                    </div>
+                    <!-- -- Tags -- -->
+                    <div class="tab-wrapper" id="tags-wrapper" data-is-hidden="true">
+                        <div class="tab-title">Tags</div>
+                        <div class="tag-manager-section">
+                            <span class="subtitle">Global Tag Library</span>
+                            <div class="section-instruction">Click a tag to toggle it on/off this note</div>
+                            <div id="manager-global-tags" class="tag-management-pool"></div>
+                            <span class="subtitle">Assigned to Note</span>
+                            <div id="manager-note-tags" class="tag-management-pool"></div>
+                            <span class="subtitle">Create New Tag</span>
+                            <div class="tag-creation-form">
+                                <input type="text" id="new-tag-name-input" placeholder="tag-name" />
+                                <input type="color" id="new-tag-color-input" value="#00ffcc" />
+                                <button id="submit-new-tag-btn">Create</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- -- Markdown Common Tags -- -->
+                    <div class="tab-wrapper" id="md-wrapper" data-is-hidden="true">
+                        <div class="tab-title">Markdown Tags</div>
+                        <div class="tab-container" id="md-container"></div>
+                        <!-- TO DO -->
+                    </div>
+                </div>
+            </aside>
+            <!-- MAIN WINDOW -->
+            <div id="main-window">
+                <!-- CODEMIRROR CONTAINER -->
+                <div class="note-viewer" id="view-md">
+                    <div class="note-container" id="note-container">
+                        <input type="text" id="note-title" class="note-title" placeholder="Untitled"/>
+                        <div id="note-editor-container" class="editor-canvas-container"></div>
+                    </div>
+                </div>
+                <!-- PREVIEW RENDER WINDOW (Hidden by default) -->
+                <div class="note-viewer" id="view-preview" data-is-hidden="true">
+                    <div class="note-container" id="note-container">
+                        <span class="note-title" id="preview-note-title"></span>
+                        <div id="note-preview-container" class="preview-canvas-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Single layout container repurposed for ALL modal prompts -->
+    <div id="editor-modal-overlay" class="modal-overlay is-hidden">
+        <div class="modal-card">
+            <h3 id="editor-modal-title">Insert Resource</h3>
+            <form id="editor-modal-form">
+                <div id="editor-modal-fields" class="modal-fields-group"></div>
+                <div class="modal-actions-toolbar">
+                    <button type="button" id="editor-modal-cancel" class="btn-text">Cancel</button>
+                    <button type="submit" id="editor-modal-submit" class="btn-primary">Confirm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

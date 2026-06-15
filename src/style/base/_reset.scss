@@ -1,0 +1,19 @@
+/* import mixin */
+@use '../abstract/mixins';
+
+/* --- BOX SIZING --- */
+html {
+    box-sizing: border-box;
+}
+
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
+/* --- GENERAL STYLE --- */
+body, #app {
+    @include mixins.flex-layout;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}

@@ -1,0 +1,15 @@
+// --- 1. ABSTRACT CONFIGURATIONS ------------------------------------------------------------
+@forward 'abstract/variables';
+@forward 'abstract/mixins';
+
+// --- 2. BASE STYLES & RESET ----------------------------------------------------------------
+@use 'base/reset';
+@use 'base/typography';
+
+// --- 3. LAYOUT SHELLS ----------------------------------------------------------------------
+@use 'layout/grid';
+@use 'layout/navigation';
+
+// --- 4. MODULES / VIEWS (Component specific styles) ----------------------------------------
+@use 'views/auth';
+@use 'views/editor';

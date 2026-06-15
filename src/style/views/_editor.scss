@@ -1,0 +1,456 @@
+/* imports */
+@use '../abstract/mixins' as m;
+@use '../abstract/variables' as v;
+
+
+/* --- PANELS --------------------------------------------------------------------- */
+
+.splash-panel, .canvas-panel {
+    background-color: #d0def4;
+
+    &[data-is-hidden="true"] {
+        display: none !important;
+    }
+}
+
+
+/* --- SPLASH SCREEN -------------------------------------------------------------- */
+
+.splash-container {
+    background-color: #3964a3;
+    border-radius: 5px;
+    color: #ffffff;
+    width: 60%;
+}
+
+.splash-header {
+    font-size: 1.2em;
+    line-height: 1.6;
+}
+
+.app-name {
+    @include m.flex-layout(row, center, center);
+    gap: 5px;
+    font-size: 2.5em;
+
+    svg {
+        fill: #ffffff;
+        width: 48px;
+        height: 48px;
+    }
+}
+
+.splash-greetings {
+    font-size: 1.3em;
+}
+
+.logout-btn {
+    @include m.flex-layout(row, center, center);
+    gap: 5px;
+    background-color: #ff6b6b;
+    border: 1px solid #ffffff;
+    border-radius: 5px;
+    color: #ffffff;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #ff8080;
+    }
+
+    svg {
+        width: 24px;
+        height: 24px;
+        fill: #ffffff;
+    }
+}
+
+.splash-button {
+    @include m.flex-layout;
+    gap: 5px;
+    background-color: #516eff;
+    border: 1px solid #ffffff;
+    border-radius: 5px;
+    color: #ffffff;
+    cursor: pointer;
+    width: 100px;
+    height: 100px;
+    margin-top: 20px;
+
+    &:hover {
+        background-color: #5e78ff;
+    }
+
+    svg {
+        width: 62px;
+        height: 62px;
+        fill: #ffffff;
+    }
+}
+
+.splash-picker {
+    @include m.flex-layout(column, flex-start, center);
+
+    h3 {
+        margin: 2px auto;
+    }
+}
+
+.splash-list-instruction {
+    display: inline-block;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+.splash-menu-list {
+    background-color: #ffffff;
+    border-radius: 5px;
+    color: #000000;
+    width: 70%;
+    margin: 10px auto;
+}
+
+.splash-note-item {
+    @include m.flex-layout(row, flex-start, center);
+    width: 100%;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #516eff30;
+    }
+}
+
+.back-btn {
+    @include m.flex-layout(row, center, center);
+    gap: 5px;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+
+    svg {
+        width: 24px;
+        height: 24px;
+        fill: #ffffff;
+    }
+}
+
+
+/* --- MODAL WINDOW --------------------------------------------------------------- */
+
+.modal-overlay {
+    @include m.flex-layout;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+    &.is-hidden {
+        display: none !important;
+    }
+}
+
+.modal-card {
+    @include m.flex-layout;
+    width: 400px;
+    height: fit-content;
+    background-color: #516eff;
+}
+
+
+/* --- MAIN MENU ------------------------------------------------------------------ */
+
+.view-btn {
+    &.is-active {
+        background-color: #36e792;
+    }
+}
+
+#header-options {
+    position: relative;
+}
+
+.header-sub-options {
+    display: none;
+    position: absolute;
+    top: 110%;
+    width: max-content;
+    height: fit-content;
+
+    &.is-open {
+        @include m.flex-layout(row, flex-start, center);
+    }
+}
+
+
+/* --- SIDE MENU ------------------------------------------------------------------ */
+
+.tab-wrapper {
+    padding: 2px 5px;
+    width: 100%;
+    height: 100%;
+    gap: 5px;
+}
+
+.tab-container {
+    @include m.flex-layout(column, flex-start, flex-start);
+    background-color: #ffffff;
+    border: 1px solid #000000;
+    border-radius: 5px;
+    width: 100%;
+    height: stretch;
+}
+
+.tab-title {
+    font-size: 1.1em;
+    font-weight: 700;
+    margin: 5px auto;
+}
+
+#explorer-filter-panel, .tag-manager-section {
+    @include m.flex-layout(column, flex-start, center);
+    gap: 5px;
+    width: 100%;
+    margin-top: 5px;
+
+    .subtitle {
+        display: inline-block;
+        font-size: 1em;
+        font-weight: 600;
+    }
+}
+
+.explorer-nav-item {
+    width: 100%;
+    background: transparent;
+    cursor: pointer;
+
+    &.is-active{
+        background-color: #516eff15;
+    }
+
+    &:hover {
+        background-color: #516eff30;
+    }
+}
+
+.filter-placeholder, .inspector-empty {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+.explorer-empty, .toc-empty, .links-empty {
+    font-style: italic;
+    opacity: 0.7;
+    padding-left: 3px;
+}
+
+.tag-chip {
+    @include m.flex-layout(row, center, center);
+    gap: 3px;
+    width: fit-content;
+    border: 2px solid;
+    border-radius: 10px;
+    padding: 1px 3px;
+}
+
+.tag-management-pool {
+    background-color: #ffffff;
+    border: 1px solid #000000;
+    border-radius: 5px;
+    width: 100%;
+    height: 3em;
+    padding: 2px 3px;
+}
+
+.toc-item {
+    width: 100%;
+    cursor: pointer;
+
+    &.toc-level-1 {
+        padding-left: 0.5rem;
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+    &.toc-level-2 {
+        padding-left: 1.25rem;
+        font-size: 1.05em;
+    }
+    &.toc-level-3 {
+        padding-left: 2rem;
+        font-size: 1em;
+    }
+    &.toc-level-4 {
+        padding-left: 2.75rem;
+        font-size: 0.95em;
+    }
+    &.toc-level-5 {
+        padding-left: 3.5rem;
+        font-size: 0.9em;
+    }
+    &.toc-level-6 {
+        padding-left: 4.25rem;
+        font-size: 0.9em;
+    }
+
+    &:hover {
+        background-color: #516eff30;
+    }
+
+}
+
+.section-instruction {
+    @include m.flex-layout;
+    font-size: 0.9em;
+    font-style: italic;
+}
+
+.tag-creation-form {
+    @include m.flex-layout;
+    width: 100%;
+
+    input {
+        width: 100%;
+    }
+
+    #new-tag-name-input {
+        padding: 2px 3px;
+        font-size: 1em;
+    }
+
+    button {
+        width: 100%;
+    }
+}
+
+#graph-container {
+    overflow: hidden !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* --- NOTE CONTAINER ------------------------------------------------------------- */
+
+.note-viewer {
+    justify-content: flex-start;
+    overflow: hidden;
+
+    &[data-is-hidden="true"] {
+        display: none !important;
+    }
+}
+
+.note-container {
+    justify-content: flex-start;
+}
+
+.note-title {
+    appearance: none;
+    background: transparent;
+    border: none;
+    font-size: 1.7em;
+    font-weight: 600;
+    margin: 5px;
+    field-sizing: content;
+    min-width: 80px;
+    max-width: 100%;
+
+    &:focus {
+        border: none;
+        outline: none;
+        background-color: #00000030;
+    }
+}
+
+.editor-canvas-container {
+    @include m.flex-layout;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+
+    .cm-editor {
+        height: 100%;
+        max-height: 100%;
+        width: 95%;
+        resize: none !important;
+    }
+
+    .cm-scroller {
+        overflow: auto;
+        scroll-behavior: smooth;
+    }
+
+    .cm-occurrence-highlight {
+        background-color: rgba(255, 215, 0, 0.35); /* Glowing amber */
+        border-bottom: 2px solid #ffd700;
+        border-radius: 2px;
+    }
+}
+
+
+/* --- PREVIEW CONTAINER ---------------------------------------- */
+
+.preview-canvas-container {
+    @include m.flex-layout(column, flex-start, stretch);
+    overflow-y: auto;
+    width: 100%;
+    height: 100%;
+    padding: 5px 25px;
+
+    // Style the compiled HTML output to match your writing theme
+
+}
+
+// Rendered images
+.resizable-image-wrapper {
+    position: relative;
+    display: inline-block;
+    align-self: flex-start;
+    max-width: 100%;
+    vertical-align: top;
+    z-index: 1; /* Establishes clean isolated tracking layer */
+
+    &:hover .resize-handle,
+    &.is-resizing .resize-handle {
+        opacity: 1;
+    }
+}
+
+.rendered-note-img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    user-select: none;        /* Prevents browser blue-highlight selections while dragging */
+    -webkit-user-drag: none;  /* Prevents browser native image ghost-shadow dragging styling */
+}
+
+.resize-handle {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    background-color: #00ffcc;
+    border: 2px solid #111116;
+    border-radius: 50%;
+    cursor: nwse-resize;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 9999 !important; /* Guarantees handle stays on top of adjacent container blocks */
+    touch-action: none !important;
+
+    // 🎯 EXPANDS THE INTERACTIVE HITBOX: Invisible 30px buffer region so fingers and mice grab it easily
+    &::after {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        background: transparent;
+    }
+}

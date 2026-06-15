@@ -1,0 +1,52 @@
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="app-name">
+            <svg><use href="#icon-logo"/></svg>
+            Voltaira
+        </div>
+        <div class="auth-form-container">
+            <div class="login-container">
+                <h2>Log in</h2>
+                <form id="login-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="login-username">Username</label>
+                        <input type="text" id="login-username" placeholder="JohnDoe" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <button type="submit" class="form-btn">
+                        <svg><use href="#icon-login"/></svg>
+                        Login
+                    </button>
+                </form>
+            </div>
+            <div class="login-container">
+                <h2>Register</h2>
+                <form id="register-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="register-username">Username</label>
+                        <input type="text" id="register-username" placeholder="JaneSmith" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" placeholder="jane@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password</label>
+                        <input type="password" id="register-password" required>
+                    </div>
+                    <button type="submit" class="form-btn">
+                        <svg><use href="#icon-register"/></svg>
+                        Register
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div class="auth-error is-hidden">
+            <svg><use href="#icon-warning"/></svg>
+            <span class="error-message" id="auth-error-message">An error occured</span>
+        </div>
+    </div>
+</div>

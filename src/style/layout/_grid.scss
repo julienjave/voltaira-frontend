@@ -1,0 +1,154 @@
+/* imports */
+@use '../abstract/mixins';
+@use '../abstract/variables' as v;
+
+/* --- MAIN GROUPS -------------------------------------------------------- */
+
+.editor-container, .canvas-panel {
+    @include mixins.flex-layout;
+    width: 100%;
+}
+
+.splash-panel {
+    @include mixins.flex-layout;
+    width: 100%;
+    height: 100vh;
+}
+
+.splash-container {
+    @include mixins.flex-layout;
+    width: 100%;
+    min-height: 50%;
+    padding: 25px 50px;
+
+    span {
+        display: flex;
+    }
+
+    #splash-username {
+        margin-left: 5px;
+        font-weight: 600;
+    }
+}
+
+.splash-header, .splash-instructions {
+    @include mixins.flex-layout;
+    width: 100%;
+}
+
+.splash-options {
+    @include mixins.flex-layout(row, center, center);
+    gap: 20px;
+    width: 100%;
+}
+
+.splash-picker {
+    @include mixins.flex-layout;
+    width: 100%;
+}
+
+.splash-logout {
+    @include mixins.flex-layout(row, flex-end, flex-end);
+    width: 100%;
+    height: stretch;
+}
+
+.header, .body {
+    @include mixins.flex-layout(row, center, flex-start);
+    width: 100%;
+}
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: v.$header-height;
+}
+
+.body {
+    margin-top: v.$header-height;
+    height: calc(100vh - v.$header-height);
+}
+
+#logo-container, #header-main {
+    @include mixins.flex-layout;
+    height: 100%;
+}
+
+#logo-container {
+    width: 270px;
+    border-bottom: 1px solid #000000;
+    background-color: rgb(252, 155, 230);
+}
+
+#header-main {
+    justify-content: flex-end;
+    width: stretch;
+}
+
+#side-menu {
+    @include mixins.flex-layout(row, left, flex-start);
+    width: fit-content;
+    height: 100%;
+}
+
+#main-window {
+    @include mixins.flex-layout(row, flex-start, flex-start);
+    width: stretch;
+    height: 100%;
+    background-color: beige;
+}
+
+
+/* --- SUB GROUPS ---------------------------------------------------------- */
+
+.main-menu, #sub-menu {
+    @include mixins.flex-layout(row, center, center);
+    width: 100%;
+}
+
+.main-menu {
+    justify-content: space-around;
+}
+
+#sub-menu {
+    height: 115px;
+    justify-content: flex-start;
+    background-color: rgb(181, 242, 162);
+}
+
+.tabs-options, .tabs-display, .note-viewer, .note-container {
+    @include mixins.flex-layout;
+    height: 100%;
+}
+
+.tabs-options {
+    justify-content: flex-start;
+    gap: 10px;
+    width: 70px;
+    padding: 5px 3px;
+    background-color: rgb(2, 196, 196);
+}
+
+.tabs-display {
+    justify-content: flex-start;
+    background-color: rgb(81, 51, 251);
+}
+
+.note-viewer {
+    width: 100%;
+    height: 100%;
+}
+
+.note-container {
+    width: 90%;
+    height: 100%;
+    background-color: rgb(244, 170, 32);
+
+    textarea {
+        width: 95%;
+        height: 100%;
+        resize: none;
+        margin-bottom: 10px;
+    }
+}
