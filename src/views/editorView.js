@@ -1990,7 +1990,6 @@ export const EditorView = {
         const editCut = document.getElementById('edit-cut')
         const editCopy = document.getElementById('edit-copy')
         const editPaste = document.getElementById('edit-paste')
-        const editFind = document.getElementById('edit-find')
         // Selection
         const selectAll = document.getElementById('select-all')
         const selectOccurences = document.getElementById('select-occurences')
@@ -2003,8 +2002,8 @@ export const EditorView = {
         const infoExport = document.getElementById('export-info')
         const infoRedo = document.getElementById('redo-info')
         const infoClipboard = document.getElementById('clipboard-info')
-        const infoSearch = document.getElementById('search-info')
         const infoSelect = document.getElementById('select-info')
+        const infoSearch = document.getElementById('search-info')
         const infoMove = document.getElementById('move-info')
 
         // - TOOLS -
@@ -2048,11 +2047,11 @@ export const EditorView = {
         const previewEl = document.getElementById('note-preview-container')
 
         // -- Lists --
-        const optionsList = [fileCreate, fileOpenFile, fileSave, fileExportMD, fileExportPDF, editUndo, editRedo, editCut, editCopy,editPaste, editFind, selectAll, selectOccurences, selectMoveUp, selectMoveDown, textBold, textItalic, textUnderline, textStrike, textSubscript, textSuperscript, textHeader, textLink, textUList, textOList, textInlineCode, insertTable, insertPicture, insertCodeblock, insertQuote, insertDivider, viewMD, viewSplit, viewPreview]
+        const optionsList = [fileCreate, fileOpenFile, fileSave, fileExportMD, fileExportPDF, editUndo, editRedo, editCut, editCopy,editPaste, selectAll, selectOccurences, selectMoveUp, selectMoveDown, textBold, textItalic, textUnderline, textStrike, textSubscript, textSuperscript, textHeader, textLink, textUList, textOList, textInlineCode, insertTable, insertPicture, insertCodeblock, insertQuote, insertDivider, viewMD, viewSplit, viewPreview]
 
-        const infoList = [infoCreate, infoOpen, infoSave, infoExport, infoExport, infoRedo, infoRedo, infoClipboard, infoClipboard, infoClipboard, infoSearch, infoSelect, infoSelect, infoMove, infoMove, infoStyle, infoStyle, infoStyle, infoStyle, infoEffects, infoEffects, infoFormat, infoFormat, infoFormat, infoFormat, infoFormat, infoInsert, infoInsert, infoInsert, infoInsert, infoInsert, infoView, infoView, infoView]
+        const infoList = [infoCreate, infoOpen, infoSave, infoExport, infoExport, infoRedo, infoRedo, infoClipboard, infoClipboard, infoClipboard, infoSelect, infoSearch, infoMove, infoMove, infoStyle, infoStyle, infoStyle, infoStyle, infoEffects, infoEffects, infoFormat, infoFormat, infoFormat, infoFormat, infoFormat, infoInsert, infoInsert, infoInsert, infoInsert, infoInsert, infoView, infoView, infoView]
 
-        const messagesList = ['Create a new file', 'Open a file', 'Save your file', 'Export as .md', 'Export as .pdf', 'Undo', 'Redo', 'Cut', 'Copy', 'Paste', 'Find', 'Select all', 'All occurences', 'Move up', 'Move down', 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'Header', 'Link', 'Unordered list', 'Ordered list', 'Inline code', 'Insert a table', 'Insert a picture', 'Insert codeblock', 'Insert a quote', 'Insert divider', 'Markdown-only', 'Split view', 'Live preview']
+        const messagesList = ['Create a new file', 'Open a file', 'Save your file', 'Export as .md', 'Export as .pdf', 'Undo', 'Redo', 'Cut', 'Copy', 'Paste', 'Select all', 'Find all', 'Move up', 'Move down', 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'Header', 'Link', 'Unordered list', 'Ordered list', 'Inline code', 'Insert a table', 'Insert a picture', 'Insert codeblock', 'Insert a quote', 'Insert divider', 'Markdown-only', 'Split view', 'Live preview']
 
 
         // --- EVENT LISTENERS ---
