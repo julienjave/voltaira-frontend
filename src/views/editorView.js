@@ -468,7 +468,6 @@ export const EditorView = {
             // 7. Populate the tabs contents
             EditorView.syncTableOfContents(editorInstance.state.doc)
             EditorView.syncOutgoingLinks(editorInstance.state.doc, cachedNotes)
-            EditorView.renderGraphView(cachedNotes, currentNoteId)
             EditorView.renderExplorer()
             EditorView.renderTagInspector()
 
@@ -1724,170 +1723,6 @@ export const EditorView = {
         html2pdf().set(exportOptions).from(targetPreviewDOM).save()
     },
 
-    // Builds and renders a force-directed network graph of notes and their interconnections
-    renderGraphView: (allNotes = [], activeNoteId = null) => {
-        const container = document.getElementById('graph-container');
-        if (!container) return;
-
-        // 1. Map our array of notes into a high-speed Lookup Dictionary
-        const notesTitleMap = {};
-        allNotes.forEach(note => {
-            if (note.title) {
-                notesTitleMap[note.title.toLowerCase().trim()] = String(note._id || note.id);
-            }
-        });
-
-        const nodesArray = [];
-        const edgesArray = [];
-        const uniqueEdgeTracker = new Set();
-
-        // 2. Map Nodes with an initial radial scatter to prevent top-left drift
-        allNotes.forEach((note, index) => {
-            const noteId = String(note._id || note.id); 
-            const isActive = activeNoteId && noteId === String(activeNoteId);
-
-            // 🎯 THE DRIFT FIX: Seed a soft layout distribution pattern around the true origin
-            const angle = (index / allNotes.length) * Math.PI * 2;
-            const radius = 60; // Spreads them out nicely into an initial orbit circle
-
-            nodesArray.push({
-                id: noteId,
-                label: note.title || "Untitled",
-                x: Math.cos(angle) * radius,
-                y: Math.sin(angle) * radius,
-                color: {
-                    background: isActive ? '#00ffcc' : '#222230',
-                    border: isActive ? '#fff' : '#44445a',
-                    highlight: { background: '#00ffcc', border: '#fff' }
-                },
-                font: { color: isActive ? '#111116' : '#e0e0e0', size: 11, face: 'sans-serif' },
-                borderWidth: isActive ? 2 : 1,
-                shape: 'box',
-                margin: 10
-            });
-
-            const bodyContent = note.content || "";
-            const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-            const wikiLinkRegex = /\[\[(.*?)\]\]/g;
-
-            let mdMatch;
-            while ((mdMatch = markdownLinkRegex.exec(bodyContent)) !== null) {
-                const target = mdMatch[2].trim();
-                if (/^(https?:\/\/|www\.)/i.test(target)) continue;
-
-                const targetNoteId = allNotes.some(n => String(n._id || n.id) === target) 
-                    ? target 
-                    : notesTitleMap[target.toLowerCase()];
-
-                if (targetNoteId && targetNoteId !== noteId) {
-                    const edgeKey = [noteId, targetNoteId].sort().join('-');
-                    if (!uniqueEdgeTracker.has(edgeKey)) {
-                        uniqueEdgeTracker.add(edgeKey);
-                        edgesArray.push({ from: noteId, to: targetNoteId });
-                    }
-                }
-            }
-
-            let wikiMatch;
-            while ((wikiMatch = wikiLinkRegex.exec(bodyContent)) !== null) {
-                const target = wikiMatch[1].split('|')[0].trim(); 
-                const targetNoteId = allNotes.some(n => String(n._id || n.id) === target)
-                    ? target
-                    : notesTitleMap[target.toLowerCase()];
-
-                if (targetNoteId && targetNoteId !== noteId) {
-                    const edgeKey = [noteId, targetNoteId].sort().join('-');
-                    if (!uniqueEdgeTracker.has(edgeKey)) {
-                        uniqueEdgeTracker.add(edgeKey);
-                        edgesArray.push({ from: noteId, to: targetNoteId });
-                    }
-                }
-            }
-        });
-
-        const data = {
-            nodes: new DataSet(nodesArray),
-            edges: new DataSet(edgesArray)
-        };
-
-        // 3. Wait for the browser layout engine to finish updating classes
-        setTimeout(() => {
-            const dynamicWidth = container.clientWidth || 320;
-            const fixedHeight = 300; 
-
-            container.innerHTML = ''; 
-
-            // 4. Balanced physics parameters
-            const options = {
-                width: `${dynamicWidth}px`,
-                height: `${fixedHeight}px`,
-                edges: {
-                    arrows: { to: { enabled: false } },
-                    color: { color: '#44445a', highlight: '#00ffcc' },
-                    width: 1.5,
-                    smooth: { type: 'continuous' }
-                },
-                physics: {
-                    solver: 'barnesHut',
-                    barnesHut: {
-                        gravitationalConstant: -3000, 
-                        centralGravity: 0.2,         // Keeps the overall cluster nicely centered
-                        springLength: 85,            
-                        springConstant: 0.04,
-                        damping: 0.09,
-                        avoidOverlap: 1              // Retain clean overlap safety boundary
-                    },
-                    stabilization: {
-                        enabled: true,
-                        iterations: 150,
-                        fit: false // Turn off initial fitting here; we will handle it perfectly on stabilization
-                    }
-                },
-                interaction: { hover: true, tooltipDelay: 200, zoomView: true, dragView: true }
-            };
-
-            // 5. Build network chart
-            const network = new Network(container, data, options);
-
-            // 6. 🎯 THE CENTERING FIX: Recalculate dimensions once physics settle down
-            network.once("stabilized", () => {
-                const currentWidth = container.clientWidth || 320;
-                
-                // Re-bind the layout sizing explicitly to ensure canvas center matches parent element
-                network.setSize(`${currentWidth}px`, '300px');
-                network.redraw();
-
-                // Fit the cluster cleanly in the center of the visual bounding box
-                network.fit({
-                    animation: { duration: 200, easingFunction: "easeInOutQuad" }
-                });
-
-                // Focus onto the specific active node file if one is selected
-                const parsedActiveId = String(activeNoteId);
-                if (activeNoteId && network.body.nodes[parsedActiveId]) {
-                    setTimeout(() => {
-                        network.focus(parsedActiveId, {
-                            scale: 0.75, // Perfect cluster bird's-eye zoom factor
-                            offset: { x: 0, y: 0 },
-                            animation: {
-                                duration: 250,
-                                easingFunction: "easeInOutQuad"
-                            }
-                        });
-                    }, 40);
-                }
-            });
-
-            // 7. Navigation Routing Events
-            network.on("click", (params) => {
-                if (params.nodes && params.nodes.length > 0) {
-                    const selectedNoteId = params.nodes[0];
-                    EditorView.loadNote(selectedNoteId);
-                }
-            });
-        }, 100) // A 50ms pause is completely imperceptible to users, but an eternity for the DOM!
-    },
-
     // Initialize the Delete Account event listener
     initDeleteAccountListener: (onDeleteAccount) => {
         const deleteAccountBtn = document.getElementById('delete-account-btn')
@@ -1954,7 +1789,6 @@ export const EditorView = {
                         // 1. Instant real-time update of the tabs contents UI
                         EditorView.syncTableOfContents(update.state.doc)
                         EditorView.syncOutgoingLinks(currentDoc, cachedNotes)
-                        EditorView.renderGraphView(cachedNotes, currentNoteId)
 
                         // LIVE PREVIEW PIPELINE: Keep HTML panel hot if visible
                         if (isPreviewMode) {
@@ -2001,8 +1835,6 @@ export const EditorView = {
                 
                 // Refresh outgoing links on the spot to catch title text changes
                 EditorView.syncOutgoingLinks(editorInstance.state.doc, cachedNotes)
-                // Refresh GraphView
-                EditorView.renderGraphView(cachedNotes, currentNoteId)
             }, 2000)
         })
 
@@ -2149,7 +1981,6 @@ export const EditorView = {
         // File
         const fileCreate = document.getElementById('file-create')
         const fileOpenFile = document.getElementById('file-open-file')
-        const fileOpenFolder = document.getElementById('file-open-folder')
         const fileSave = document.getElementById('file-save')
         const fileExportMD = document.getElementById('file-export-md')
         const fileExportPDF = document.getElementById('file-export-pdf')
@@ -2160,7 +1991,6 @@ export const EditorView = {
         const editCopy = document.getElementById('edit-copy')
         const editPaste = document.getElementById('edit-paste')
         const editFind = document.getElementById('edit-find')
-        const editReplace = document.getElementById('edit-replace')
         // Selection
         const selectAll = document.getElementById('select-all')
         const selectOccurences = document.getElementById('select-occurences')
@@ -2218,11 +2048,11 @@ export const EditorView = {
         const previewEl = document.getElementById('note-preview-container')
 
         // -- Lists --
-        const optionsList = [fileCreate, fileOpenFile, fileOpenFolder, fileSave, fileExportMD, fileExportPDF, editUndo, editRedo, editCut, editCopy,editPaste, editFind, editReplace, selectAll, selectOccurences, selectMoveUp, selectMoveDown, textBold, textItalic, textUnderline, textStrike, textSubscript, textSuperscript, textHeader, textLink, textUList, textOList, textInlineCode, insertTable, insertPicture, insertCodeblock, insertQuote, insertDivider, viewMD, viewSplit, viewPreview]
+        const optionsList = [fileCreate, fileOpenFile, fileSave, fileExportMD, fileExportPDF, editUndo, editRedo, editCut, editCopy,editPaste, editFind, selectAll, selectOccurences, selectMoveUp, selectMoveDown, textBold, textItalic, textUnderline, textStrike, textSubscript, textSuperscript, textHeader, textLink, textUList, textOList, textInlineCode, insertTable, insertPicture, insertCodeblock, insertQuote, insertDivider, viewMD, viewSplit, viewPreview]
 
-        const infoList = [infoCreate, infoOpen, infoOpen, infoSave, infoExport, infoExport, infoRedo, infoRedo, infoClipboard, infoClipboard, infoClipboard, infoSearch, infoSearch, infoSelect, infoSelect, infoMove, infoMove, infoStyle, infoStyle, infoStyle, infoStyle, infoEffects, infoEffects, infoFormat, infoFormat, infoFormat, infoFormat, infoFormat, infoInsert, infoInsert, infoInsert, infoInsert, infoInsert, infoView, infoView, infoView]
+        const infoList = [infoCreate, infoOpen, infoSave, infoExport, infoExport, infoRedo, infoRedo, infoClipboard, infoClipboard, infoClipboard, infoSearch, infoSelect, infoSelect, infoMove, infoMove, infoStyle, infoStyle, infoStyle, infoStyle, infoEffects, infoEffects, infoFormat, infoFormat, infoFormat, infoFormat, infoFormat, infoInsert, infoInsert, infoInsert, infoInsert, infoInsert, infoView, infoView, infoView]
 
-        const messagesList = ['Create a new file', 'Open a file', 'Open a folder', 'Save your file', 'Export as .md', 'Export as .pdf', 'Undo', 'Redo', 'Cut', 'Copy', 'Paste', 'Find', 'Replace', 'Select all', 'All occurences', 'Move up', 'Move down', 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'Header', 'Link', 'Unordered list', 'Ordered list', 'Inline code', 'Insert a table', 'Insert a picture', 'Insert codeblock', 'Insert a quote', 'Insert divider', 'Markdown-only', 'Split view', 'Live preview']
+        const messagesList = ['Create a new file', 'Open a file', 'Save your file', 'Export as .md', 'Export as .pdf', 'Undo', 'Redo', 'Cut', 'Copy', 'Paste', 'Find', 'Select all', 'All occurences', 'Move up', 'Move down', 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'Header', 'Link', 'Unordered list', 'Ordered list', 'Inline code', 'Insert a table', 'Insert a picture', 'Insert codeblock', 'Insert a quote', 'Insert divider', 'Markdown-only', 'Split view', 'Live preview']
 
 
         // --- EVENT LISTENERS ---
@@ -2381,30 +2211,27 @@ export const EditorView = {
         const explorerTab = document.getElementById('tab-explorer')
         const tocTab = document.getElementById('tab-toc')
         const linksTab = document.getElementById('tab-links')
-        const graphTab = document.getElementById('tab-graph')
         const tagsTab = document.getElementById('tab-tags')
         const mdTab = document.getElementById('tab-md')
-        const tabsList = [explorerTab, tocTab, linksTab, graphTab, tagsTab, mdTab]
+        const tabsList = [explorerTab, tocTab, linksTab, tagsTab, mdTab]
 
         // Tooltips
         const explorerTooltip = document.getElementById('tooltip-explorer')
         const tocTooltip = document.getElementById('tooltip-toc')
         const linksTooltip = document.getElementById('tooltip-links')
-        const graphTooltip = document.getElementById('tooltip-graph')
         const tagsTooltip = document.getElementById('tooltip-tags')
         const mdTooltip = document.getElementById('tooltip-md')
-        const tooltipsList = [explorerTooltip, tocTooltip, linksTooltip, graphTooltip, tagsTooltip, mdTooltip]
+        const tooltipsList = [explorerTooltip, tocTooltip, linksTooltip, tagsTooltip, mdTooltip]
 
         // Tab Display
         const tabsDisplay = document.getElementById('tabs-display')
         const tabWrapperExplorer = document.getElementById('explorer-wrapper')
         const tabWrapperToc = document.getElementById('toc-wrapper')
         const tabWrapperLinks = document.getElementById('links-wrapper')
-        const tabWrapperGraph = document.getElementById('graph-wrapper')
         const tabWrapperTags = document.getElementById('tags-wrapper')
         const tabWrapperMD = document.getElementById('md-wrapper')
-        const tabNamesList = ['explorer', 'toc', 'links', 'graph', 'tags', 'md']
-        const tabWrappersList = [tabWrapperExplorer, tabWrapperToc, tabWrapperLinks, tabWrapperGraph, tabWrapperTags, tabWrapperMD]
+        const tabNamesList = ['explorer', 'toc', 'links', 'tags', 'md']
+        const tabWrappersList = [tabWrapperExplorer, tabWrapperToc, tabWrapperLinks, tabWrapperTags, tabWrapperMD]
 
         for (let i=0; i<tabsList.length; i++) {
             // --- TOOLTIPS ---
@@ -2455,10 +2282,6 @@ export const EditorView = {
                     break
                 case 'links':
                     tabWrapperLinks.removeAttribute('data-is-hidden')
-                    break
-                case 'graph':
-                    tabWrapperGraph.removeAttribute('data-is-hidden')
-                    EditorView.renderGraphView(noteCache, currentNoteId)
                     break
                 case 'tags':
                     tabWrapperTags.removeAttribute('data-is-hidden')
