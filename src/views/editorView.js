@@ -471,6 +471,9 @@ export const EditorView = {
             EditorView.renderExplorer()
             EditorView.renderTagInspector()
 
+            // 8. Gives the focus to the editor
+            editorInstance.focus()
+
             console.log(`Successfully populated workspace canvas for note: "${note.title}"`)
         } catch (error) {
             console.error(`Failed to execute view state population for note ID (${noteId}):`, error)
@@ -507,7 +510,7 @@ export const EditorView = {
 
                     labelNode.innerHTML = `
                         ${field.label}
-                        <select name="${field.key}" required>${optionsMarkup}</select>
+                        <select name="${field.key}" ${field.required ? 'required' : ''}>${optionsMarkup}</select>
                     `
                 } else {
                     // Standard alphanumeric/numerical input rule fallback
@@ -520,7 +523,7 @@ export const EditorView = {
                             placeholder="${field.placeholder || ''}" 
                             min="${field.min || ''}"
                             max="${field.max || ''}"
-                            required 
+                            ${field.required ? 'required' : ''} 
                         />
                     `
                 }
@@ -648,9 +651,12 @@ export const EditorView = {
 
         // 2. Scan every line of the document
         for (let i = 1; i <= doc.lines; i++) {
-            const lineText = doc.line(i).text
+            const line = doc.line(i) // Get full line object to access absolute positions
+            const lineText = line.text
 
             // Pattern A: Match Wiki-links -> [[Some Note Title]]
+            // Note: Wiki-links don't need a write-back! Once the note is created, 
+            // notesTitleMap will automatically match the title on the next sync pass.
             const wikiMatches = [...lineText.matchAll(/\[\[(.*?)\]\]/g)]
             wikiMatches.forEach(match => {
                 const title = match[1].trim()
@@ -673,13 +679,23 @@ export const EditorView = {
                 
                 // Ignore external web assets, email paths, or inner page anchors
                 if (/^(https?:\/\/|www\.|mailto:|#)/i.test(target)) {
-                    return // Safely skip this match and jump to the next item
+                    return 
                 }
 
-                // Check if the target is a direct MongoDB ID or an existing note title
+                // Clean up the target title if it uses our custom 'ghost:' protocol prefix
+                const isGhostProtocol = target.startsWith('ghost:')
+                const cleanTarget = isGhostProtocol ? decodeURIComponent(target.replace('ghost:', '')) : target
+
                 const isDirectId = allNotes.some(n => n._id === target)
-                const lowerTarget = target.toLowerCase()
+                const lowerTarget = cleanTarget.toLowerCase().trim()
                 const idFromTitle = notesTitleMap[lowerTarget]
+
+                // POSITION TRACKING ENGINE:
+                // Calculate the exact absolute index where the text inside the parenthesis starts and ends
+                const fullMatchString = match[0]
+                const urlStartIndex = fullMatchString.indexOf('(') + 1
+                const absoluteUrlFrom = line.from + match.index + urlStartIndex
+                const absoluteUrlTo = absoluteUrlFrom + target.length
 
                 if (isDirectId) {
                     const matchedNote = allNotes.find(n => n._id === target)
@@ -691,13 +707,14 @@ export const EditorView = {
                         noteId: target
                     })
                 } else {
-                    // It's using text inside the parenthesis instead of a hard ID
                     extractedLinks.push({
                         type: 'markdown',
                         display: label,
-                        targetTitle: target,
+                        targetTitle: cleanTarget,
                         isGhost: !idFromTitle,
-                        noteId: idFromTitle || null
+                        noteId: idFromTitle || null,
+                        // Save the character range boundary inside CodeMirror coordinates
+                        pos: { from: absoluteUrlFrom, to: absoluteUrlTo }
                     })
                 }
             })
@@ -716,13 +733,12 @@ export const EditorView = {
             const item = document.createElement('div')
             item.className = `link-item ${link.isGhost ? 'is-ghost' : 'is-live'}`
             
-            // Layout styling setup
             item.innerHTML = `
                 <span class="link-icon">${link.isGhost ? '👻' : '🔗'}</span>
                 <span class="link-label">${link.display}</span>
             `
 
-            // 5. Wire navigation interactions
+            // 5. Wire navigation and modification interactions
             if (!link.isGhost) {
                 item.addEventListener('click', () => {
                     EditorView.loadNote(link.noteId)
@@ -733,12 +749,26 @@ export const EditorView = {
                     try {
                         const generatedNote = await noteService.createNote(link.targetTitle)
                         
+                        // 6. CODEBIODIRECTIONAL WRITE-BACK:
+                        // If it's a standard markdown link template, replace 'ghost:...' with the true ID
+                        if (link.type === 'markdown' && link.pos && editorInstance) {
+                            editorInstance.dispatch({
+                                changes: {
+                                    from: link.pos.from,
+                                    to: link.pos.to,
+                                    insert: generatedNote._id
+                                }
+                            })
+
+                        }
+
                         // Update the Cache
                         cachedNotes.push(generatedNote)
 
                         // Update the explorer
                         EditorView.renderExplorer()
 
+                        // Transition view context to the newly instantiated document profile
                         EditorView.loadNote(generatedNote._id)
                     } catch (err) {
                         console.error("Ghost link generation crash:", err)
@@ -766,12 +796,15 @@ export const EditorView = {
 
         // 3. Construct the list links
         cachedNotes.forEach(note => {
+            const navItem = document.createElement('div')
+            navItem.className = 'explorer-item'
+
             const navLink = document.createElement('div')
             navLink.className = 'explorer-nav-item'
             
             // Highlight this item if it matches our active opened note pointer
             if (note._id === currentNoteId) {
-                navLink.classList.add('is-active')
+                navItem.classList.add('is-active')
             }
 
             navLink.innerHTML = `
@@ -779,12 +812,25 @@ export const EditorView = {
                 <span class="nav-item-title">${note.title || 'Untitled Note'}</span>
             `
 
+            const deleteNoteBtn = document.createElement('div')
+            deleteNoteBtn.className = 'explorer-delete-note-btn'
+            deleteNoteBtn.innerHTML = `<svg><use href="#icon-trash" /></svg>`
+
             // 4. Click event to seamlessly load the selected note
             navLink.addEventListener('click', () => {
                 EditorView.loadNote(note._id)
             })
+            // Click event to delete corresponding note
+            deleteNoteBtn.addEventListener('click', () => {
+                const indexNote = cachedNotes.indexOf(note._id)
+                noteService.deleteNote(note._id)
+                cachedNotes.splice(indexNote, 1)
+                EditorView.renderExplorer()
+            })
 
-            explorerContainer.appendChild(navLink)
+            navItem.appendChild(navLink)
+            navItem.appendChild(deleteNoteBtn)
+            explorerContainer.appendChild(navItem)
         })
     },
 
@@ -1164,9 +1210,9 @@ export const EditorView = {
     insertLink: async (availableNotes = []) => {
         if (!editorInstance) return
 
-        // 1. Safely fallback to note._id for MongoDB/Mongoose compliance
+        // 1. Build out our select options array
         const noteOptions = [
-            { value: "", label: "-- None (Use External URL Input) --" },
+            { value: "", label: "-- None (Use External URL or Ghost Note) --" },
             ...availableNotes.map(note => {
                 const actualId = note._id || note.id
                 return {
@@ -1176,44 +1222,54 @@ export const EditorView = {
             })
         ]
 
-        // 2. Open our unified modal container showing both destination fields
+        // 2. Open our upgraded modal. All fields are optional (required: false) 
+        // so they don't fight native browser validation constraints.
         const inputData = await EditorView.promptCustomModal("Insert Link Asset", [
-            { key: "url", label: "External Destination Link URL", defaultValue: "https://", placeholder: "https://example.com" },
-            { key: "noteId", label: "Or Link to an Internal Note", type: "select", defaultValue: "", options: noteOptions }
+            { key: "url", label: "External Destination Link URL", defaultValue: "", placeholder: "https://example.com", required: false },
+            { key: "noteId", label: "Or Link to an Existing Internal Note", type: "select", defaultValue: "", options: noteOptions, required: false },
+            { key: "ghostNote", label: "Or Link to a New Note That Doesn't Exist Yet (Ghost Note)", type: "text", placeholder: "Enter new note title...", required: false }
         ])
 
-        if (!inputData) return // User cancelled execution
+        if (!inputData) return; // User cancelled execution
 
         let targetPath = ""
-        let isInternalNote = false
+        let isInternalLink = false
         let selectedNoteTitle = ""
 
-        // 3. Guard strictly against the literal string "undefined"
-        if (inputData.noteId && inputData.noteId !== "undefined") {
-            // Find the note matching either layout key variant
+        // 3. PRIORITY 1: Existing Internal Note Checked
+        if (inputData.noteId && inputData.noteId !== "undefined" && inputData.noteId !== "") {
             const chosenNote = availableNotes.find(n => (n._id || n.id) === inputData.noteId)
-            
             if (chosenNote) {
                 targetPath = chosenNote._id || chosenNote.id
                 selectedNoteTitle = chosenNote.title || "Untitled Note"
-                isInternalNote = true
+                isInternalLink = true
             }
-        }
-
-        // 4. Fallback to external URL input if an internal note wasn't cleanly resolved
-        if (!isInternalNote) {
-            targetPath = inputData.url ? inputData.url.trim() : "https://"
+        } 
+        // 4. PRIORITY 2: New Ghost Note Checked
+        else if (inputData.ghostNote && inputData.ghostNote.trim() !== "") {
+            const ghostTitle = inputData.ghostNote.trim()
+            // Use a unique URI prefix string so your markdown parser can flag it as a creation trigger
+            targetPath = `ghost:${encodeURIComponent(ghostTitle)}`
+            selectedNoteTitle = ghostTitle
+            isInternalLink = true // Treats as internal for text insertion automation rules
+        } 
+        // 5. PRIORITY 3: Fallback straight to External URL target configurations
+        else if (inputData.url && inputData.url.trim() !== "") {
+            targetPath = inputData.url.trim()
+        } else {
+            // If they click submit with totally blank values, abort to prevent bad markdown output
+            return 
         }
 
         const state = editorInstance.state
 
-        // 5. Run the CodeMirror structural multi-range transaction
+        // 6. Run the CodeMirror structural multi-range transaction mapping
         const transactionSpec = state.changeByRange((range) => {
             let displayLabel = ""
             let replacement = ""
 
             if (!range.empty) {
-                // CASE A: Text is already highlighted by the writer
+                // CASE A: Text is highlighted by the user -> wrap it cleanly
                 displayLabel = state.doc.sliceString(range.from, range.to)
                 replacement = `[${displayLabel}](${targetPath})`
                 
@@ -1222,11 +1278,11 @@ export const EditorView = {
                     range: EditorSelection.range(range.from + 1, range.from + 1 + displayLabel.length)
                 }
             } else {
-                // CASE B: Empty cursor placement
-                displayLabel = isInternalNote ? selectedNoteTitle : ""
+                // CASE B: Empty cursor placement -> auto-populate text labels for internal note contexts
+                displayLabel = isInternalLink ? selectedNoteTitle : ""
                 replacement = `[${displayLabel}](${targetPath})`
 
-                const cursorPosition = isInternalNote 
+                const cursorPosition = isInternalLink 
                     ? range.from + replacement.length 
                     : range.from + 1
 
