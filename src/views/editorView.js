@@ -149,7 +149,7 @@ const voltairaCanvasTheme = CodeMirror.theme({
         fontSize: "16px"
     },
     ".cm-content": {
-        fontFamily: "'Inter', system-ui, sans-serif", // Clean reading font for body text
+        fontFamily: "'Quicksand', sans-serif",
         lineHeight: "1.6",
         padding: "2rem"
     },
@@ -165,6 +165,7 @@ const voltairaCanvasTheme = CodeMirror.theme({
 const voltairaMarkdownHighlight = HighlightStyle.define([
     { tag: t.heading1, fontSize: "2rem", fontWeight: "700", color: "#00ffcc", block: true },
     { tag: t.heading2, fontSize: "1.6rem", fontWeight: "600", color: "#e1e1e6", block: true },
+    { tag: t.heading3, fontSize: "1.2rem", fontWeight: "600", color: "#e1e1e6", block: true },
     { tag: t.strong, fontWeight: "bold", color: "#ffffff" },
     { tag: t.emphasis, fontStyle: "italic" },
     { tag: t.link, color: "#00ffcc", textDecoration: "underline" }
@@ -300,7 +301,7 @@ const occurrenceHighlightField = StateField.define({
 const noteNavigationClickExtension = (onInternalLinkTriggered) => {
     return CodeMirror.domEventHandlers({
         click(event, view) {
-            // 🎯 Require Ctrl (Windows/Linux) or Cmd (Mac) so standard editing clicks still work!
+            // Require Ctrl (Windows/Linux) or Cmd (Mac) so standard editing clicks still work!
             if (!event.ctrlKey && !event.metaKey) return false
 
             // 1. Calculate the exact character coordinate position where the mouse hit
@@ -477,8 +478,167 @@ export const EditorView = {
             console.log(`Successfully populated workspace canvas for note: "${note.title}"`)
         } catch (error) {
             console.error(`Failed to execute view state population for note ID (${noteId}):`, error)
-            // Fallback: Could trigger a notification banner to the user here <======================== TO DO !!!!!!!!
+            await EditorView.alertModal(`Could not load note with ID: ${noteId}`, 'error')
         }
+    },
+
+    // Triggers a non-blocking informational or error alert modal window
+    // Resolves when the user clicks the "Ok" button
+    alertModal: function(message, type = 'info') {
+        return new Promise((resolve) => {
+            // 1. Grab our DOM hooks
+            const overlay = document.getElementById('editor-modal-overlay-info')
+            const titleEl = document.getElementById('editor-modal-title-info')
+            const textEl = document.getElementById('modal-info-text')
+            const iconContainer = document.getElementById('modal-info-icon')
+            const okBtn = document.getElementById('editor-modal-ok-btn')
+
+            if (!overlay || !titleEl || !textEl || !iconContainer || !okBtn) {
+                console.error("Missing modal HTML baseline configurations inside the index.")
+                return resolve()
+            }
+
+            // 2. Define our SVG graphics dictionary dynamically
+            const icons = {
+                error: `<svg><use href="#icon-error /></svg>`,
+                success: `<svg><use href="#icon-success /></svg>`,
+                info: `<svg><use href="#icon-info /></svg>`
+            }
+
+            // 3. Define the auto-titles matching the nature of the event
+            const titles = {
+                error: "Oops, Something went wrong...",
+                success: "Bravo!",
+                info: "Information"
+            }
+
+            // 4. Populate content values into the template target frames
+            titleEl.textContent = titles[type] || titles.info
+            textEl.textContent = message
+            iconContainer.innerHTML = icons[type] || icons.info
+
+            // Remove previous theme classes and apply the current active styling context
+            overlay.classList.remove('theme-error', 'theme-success', 'theme-info')
+            overlay.classList.add(`theme-${type}`)
+
+            // 5. Build clean, disposable closing event hooks
+            const cleanUpAndClose = () => {
+                overlay.classList.add('is-hidden')
+                okBtn.removeEventListener('click', handleOkClick)
+                document.removeEventListener('keydown', handleKeyDown)
+                resolve() // Resolve promise context so code execution flows outward
+            }
+
+            const handleOkClick = (e) => {
+                e.preventDefault()
+                cleanUpAndClose()
+            }
+
+            const handleKeyDown = (e) => {
+                // If they hit Enter or Escape, dismiss the modal cleanly
+                if (e.key === 'Enter' || e.key === 'Escape') {
+                    e.preventDefault()
+                    cleanUpAndClose()
+                }
+            }
+
+            // 6. Wire listeners and pull back the visibility layout veil
+            okBtn.addEventListener('click', handleOkClick)
+            document.addEventListener('keydown', handleKeyDown)
+            overlay.classList.remove('is-hidden')
+            
+            // Focus the OK button automatically so pressing Enter works right away
+            okBtn.focus()
+        })
+    },
+
+    // Prompts a binary choice modal (Confirm/Cancel)
+    confirmModal: (title, message, confirmText = "Confirm") => {
+        return new Promise((resolve) => {
+            const overlay = document.getElementById('editor-modal-overlay')
+            const titleEl = document.getElementById('editor-modal-title')
+            const fieldsContainer = document.getElementById('editor-modal-fields')
+            const form = document.getElementById('editor-modal-form')
+            const cancelBtn = document.getElementById('editor-modal-cancel')
+            
+            // Grab the submit button inside the form to dynamically alter its text
+            const submitBtn = form.querySelector('button[type="submit"]') || form.querySelector('.btn-submit')
+
+            if (!overlay || !form || !fieldsContainer) return resolve(false)
+
+            // 1. Inject setup text
+            titleEl.textContent = title
+            
+            // 2. Clear old input elements, and insert a simple descriptive text node instead
+            fieldsContainer.innerHTML = `
+                <div class="modal-info-message">
+                    <div class="modal-info-icon">
+                        <svg><use href="#icon-warning"/></svg>
+                    </div>
+                    <div class="modal-info-text">${message}</div>
+                </div>
+            `
+
+            // Save original submit button text, then change it to what we need (e.g., "Delete")
+            const originalSubmitText = submitBtn ? submitBtn.textContent : "Submit"
+            if (submitBtn) {
+                let svgIcon = ``
+                if (confirmText.toLowerCase() === 'delete') {
+                    submitBtn.classList.add('btn-danger')
+                    svgIcon = `#icon-trash`
+                } else {
+                    svgIcon = `#icon-confirm`
+                }
+
+                submitBtn.innerHTML = `
+                    <svg><use href="${svgIcon}"/></svg>
+                    ${confirmText}
+                    `
+            }
+
+            // 3. Make visible
+            overlay.classList.remove('is-hidden')
+            
+            // Auto-focus the cancel button as a safety measure so pressing Enter doesn't accidentally delete
+            cancelBtn?.focus()
+
+            // 4. Teardown wrapper
+            const close = (confirmed) => {
+                overlay.classList.add('is-hidden')
+                form.onsubmit = null
+                cancelBtn.onclick = null
+                
+                // Restore original button attributes
+                if (submitBtn) {
+                    submitBtn.textContent = originalSubmitText
+                    submitBtn.classList.remove('btn-danger')
+                }
+                
+                resolve(confirmed)
+            }
+
+            // 5. Connect resolution triggers
+            if (submitBtn) {
+                submitBtn.onclick = (e) => {
+                    e.preventDefault()
+                    close(true)
+                }
+            }
+
+            if (form) {
+                form.onsubmit = (e) => {
+                    e.preventDefault()
+                    close(true)
+                }
+            }
+
+            if (cancelBtn) {
+                cancelBtn.onclick = (e) => {
+                    e.preventDefault()
+                    close(false)
+                }
+            }
+        })
     },
 
     // Launches a non-blocking HTML modal interface and suspends execution until resolved.
@@ -489,6 +649,11 @@ export const EditorView = {
             const fieldsContainer = document.getElementById('editor-modal-fields')
             const form = document.getElementById('editor-modal-form')
             const cancelBtn = document.getElementById('editor-modal-cancel')
+            
+            // GRAB THE SHARED SUBMIT BUTTON ROW TO CLEAR THE LEAK
+            const submitBtn = form?.querySelector('button[type="submit"]') || 
+                            form?.querySelector('.btn-submit') || 
+                            document.getElementById('editor-modal-submit');
 
             if (!overlay || !form || !fieldsContainer) return resolve(null)
 
@@ -501,7 +666,6 @@ export const EditorView = {
                 const labelNode = document.createElement('label')
                 
                 if (field.type === 'select') {
-                    // Dynamically compile options into an HTML select dropdown tree
                     const optionsMarkup = field.options.map(opt => `
                         <option value="${opt.value}" ${opt.value === field.defaultValue ? 'selected' : ''}>
                             ${opt.label}
@@ -513,7 +677,6 @@ export const EditorView = {
                         <select name="${field.key}" ${field.required ? 'required' : ''}>${optionsMarkup}</select>
                     `
                 } else {
-                    // Standard alphanumeric/numerical input rule fallback
                     labelNode.innerHTML = `
                         ${field.label}
                         <input 
@@ -539,23 +702,74 @@ export const EditorView = {
             // 4. Teardown wrapper to clean up event listeners and hide the overlay
             const close = (outputValue) => {
                 overlay.classList.add('is-hidden')
+                
+                // Wipe absolute shared tracking parameters completely
+                if (submitBtn) submitBtn.onclick = null
                 form.onsubmit = null
                 cancelBtn.onclick = null
+                
                 resolve(outputValue)
             }
 
             // 5. Connect resolution triggers
             form.onsubmit = (e) => {
+                // CRITICAL INSULATION: Absolute first line execution guard 
+                // completely locks down the browser against native page reloads!
                 e.preventDefault()
-                const formData = new FormData(form)
-                const results = {}
-                fieldConfigs.forEach(field => {
-                    results[field.key] = formData.get(field.key).trim()
-                })
-                close(results)
+                e.stopPropagation()
+                
+                try {
+                    const formData = new FormData(form)
+                    const results = {}
+                    
+                    fieldConfigs.forEach(field => {
+                        const rawValue = formData.get(field.key)
+                        if (rawValue !== null && typeof rawValue === 'string') {
+                            results[field.key] = rawValue.trim()
+                        } else {
+                            results[field.key] = "" 
+                        }
+                    })
+                    
+                    close(results)
+                    
+                } catch (err) {
+                    console.error("Critical layout error compiling custom modal form properties:", err)
+                    close(null) 
+                }
             }
 
-            cancelBtn.onclick = () => close(null)
+            if (submitBtn) {
+                submitBtn.onclick = (e) => {
+                    // If this is a standard form button, clicking it automatically triggers 'onsubmit'.
+                    // If it's a loose button, let's process submission safely without dispatchEvent traps.
+                    if (!form.checkValidity()) {
+                        // Let native browser validation tooltips show up if a required field is missing
+                        return
+                    }
+                    
+                    // If our submit button is structured as a <button type="button"> instead of "submit",
+                    // we manually trigger our safe object method instead of risking a buggy native event dispatch:
+                    if (submitBtn.getAttribute('type') !== 'submit') {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        
+                        const formData = new FormData(form)
+                        const results = {}
+                        fieldConfigs.forEach(field => {
+                            const rawValue = formData.get(field.key)
+                            results[field.key] = (rawValue !== null && typeof rawValue === 'string') ? rawValue.trim() : ""
+                        })
+                        close(results)
+                    }
+                };
+            }
+
+            cancelBtn.onclick = (e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                close(null)
+            }
         })
     },
 
@@ -760,6 +974,16 @@ export const EditorView = {
                                 }
                             })
 
+                            // Extract the fully updated document string from CodeMirror
+                            const updatedDocumentText = editorInstance.state.doc.toString()
+
+                            if (currentNoteId) {
+                                console.log(`💾 Persisting link write-back to database for note: ${currentNoteId}`)
+                                
+                                // Fire our backend service update call to lock the changes into MongoDB
+                                await noteService.updateNote(currentNoteId, { content: updatedDocumentText })
+                            }
+
                         }
 
                         // Update the Cache
@@ -772,6 +996,7 @@ export const EditorView = {
                         EditorView.loadNote(generatedNote._id)
                     } catch (err) {
                         console.error("Ghost link generation crash:", err)
+                        await EditorView.alertModal('Ghost link generation failed', 'error')
                     }
                 })
             }
@@ -821,11 +1046,63 @@ export const EditorView = {
                 EditorView.loadNote(note._id)
             })
             // Click event to delete corresponding note
-            deleteNoteBtn.addEventListener('click', () => {
-                const indexNote = cachedNotes.indexOf(note._id)
-                noteService.deleteNote(note._id)
-                cachedNotes.splice(indexNote, 1)
-                EditorView.renderExplorer()
+            deleteNoteBtn.addEventListener('click', async (e) => {
+                // 🎯 DIAGNOSTIC CHECK: Stop the event from bubbling up to the nav link row
+                e.stopPropagation();
+
+                // 🎯 PROTECTION LOCK: Ensure this event ONLY belongs to the explorer sidebar trash button!
+                // If the event target is inside the modal wrapper, block execution instantly.
+                if (e.target.closest('#editor-modal-overlay') || e.target.closest('#editor-modal-form')) {
+                    console.warn("⚠️ Deletion blocked: Intercepted a stray event bubbling from the modal overlay layout.");
+                    return;
+                }
+
+                console.log("🥬 Trash icon clicked for note:", note.title)
+
+                const targetIdToDelete = note._id
+                const targetTitleToDelete = note.title || 'Untitled Note'
+
+                // Open the confirmation modal frame
+                const confirmed = await EditorView.confirmModal(
+                    `Delete Note?`,
+                    `Are you sure you want to permanently delete the note '${targetTitleToDelete}'? This cannot be undone.`,
+                    `Delete`
+                )
+
+                if (!confirmed) {
+                    console.log("Note deletion aborted by user.")
+                    return // Break execution early
+                }
+
+                try {
+                    const result = await noteService.deleteNote(targetIdToDelete)
+                        
+                    const freshIndex = cachedNotes.findIndex(n => n._id === targetIdToDelete)
+                    
+                    if (freshIndex !== -1) {
+                        cachedNotes.splice(freshIndex, 1)
+                    }
+
+                    await EditorView.alertModal("Note removed successfully.", "success")
+                    
+                    if (targetIdToDelete === currentNoteId) {
+                        currentNoteId = null 
+                        
+                        if (cachedNotes.length > 0) {
+                            EditorView.loadNote(cachedNotes[0]._id)
+                        } else {
+                            const splashShell = document.getElementById('welcome-splash-shell')
+                            const editorShell = document.getElementById('editor-workspace-shell')
+                            if (editorShell) editorShell.setAttribute('data-is-hidden', 'true')
+                            if (splashShell) splashShell.removeAttribute('data-is-hidden')
+                        }
+                    }
+
+                    EditorView.renderExplorer()
+                } catch (error) {
+                    console.error("❌ Deletion lifecycle failure caught in try/catch:", error)
+                    await EditorView.alertModal(`Failed to delete note: ${error.message}`, "error")
+                }
             })
 
             navItem.appendChild(navLink)
@@ -909,6 +1186,7 @@ export const EditorView = {
             EditorView.renderExplorer() // Refresh note list
         } catch (err) {
             console.error("Filter request failed:", err)
+            await EditorView.alertModal(`Filter request failed`, 'error')
         }
     },
 
@@ -933,7 +1211,7 @@ export const EditorView = {
                 const tag = cachedTags.find(t => t._id === tagId)
                 if (!tag) return
 
-                const chip = document.createElement('span')
+                const chip = document.createElement('div')
                 chip.className = 'tag-chip assigned'
                 chip.style.backgroundColor = tag.color
                 chip.innerHTML = `${tag.name} &times;`
@@ -951,9 +1229,16 @@ export const EditorView = {
         cachedTags.forEach(tag => {
             const isAlreadyAssigned = assignedTagIds.includes(tag._id)
 
-            const chip = document.createElement('span')
+            const chip = document.createElement('div')
             chip.className = `tag-chip library-item ${isAlreadyAssigned ? 'has-it' : ''}`
-            chip.textContent = tag.name
+            const chipName = document.createElement('div')
+            chipName.className = `tag-item-name`
+            chipName.innerText = tag.name
+            const chipDeleteBtn = document.createElement('div')
+            chipDeleteBtn.className = 'tag-delete-btn'
+            chipDeleteBtn.innerHTML = `<svg><use href="#icon-trash" /></svg>`
+            chip.appendChild(chipName)
+            chip.appendChild(chipDeleteBtn)
             
             if (isAlreadyAssigned) {
                 chip.style.backgroundColor = tag.color
@@ -970,6 +1255,35 @@ export const EditorView = {
                     await noteService.addTagToNote(currentNoteId, tag._id) 
                 }
                 EditorView.renderTagInspector()
+            })
+
+            // Delete Tag Logic
+            chipDeleteBtn.addEventListener('click', async () => {
+                const confirmed = await EditorView.confirmModal(
+                    `Delete Tag?`,
+                    `Are you sure you want to permanently delete the tag ${tag.name}? This cannot be undone.`,
+                    `Delete`
+                )
+
+                if (!confirmed) {
+                    console.log("Tag deletion aborted by user.")
+                    return // Break execution early
+                }
+
+                // Trigger the rest of the pipeline if true
+                try {
+                    console.log(`Executing deletion pipeline for tag ID: ${tag._id}`)
+                    const result = await tagService.deleteTagById(tag._id)
+                    
+                    if (result.success) {
+                        // Re-render tag manager panel interface
+                        EditorView.renderTagManager()
+                        // Inform user via notification alert modal
+                        await EditorView.alertModal("Tag removed successfully.", "success")
+                    }
+                } catch (error) {
+                    await EditorView.alertModal(`Failed to delete tag: ${error.message}`, "error")
+                }
             })
 
             globalTagsContainer.appendChild(chip)
@@ -1609,6 +1923,7 @@ export const EditorView = {
                     "Clipboard read blocked. Ensure browser permission dialog access is granted.", 
                     err
                 )
+                await EditorView.alertModal('Clipboard read blocked. Ensure browser permission access is granted.')
             }
         }
 
@@ -1914,6 +2229,7 @@ export const EditorView = {
                 onLogOutSuccess?.() // Optional Chaining (?.), replace an if statement
             } catch (error) {
                 console.error("Logging out failed:", error.message)
+                await EditorView.alertModal("Logging out failed.", 'error')
             }
         }
 
@@ -1980,7 +2296,7 @@ export const EditorView = {
                 splashDefaultShell.setAttribute('data-is-hidden', 'true')
                 splashNotePickerShell.removeAttribute('data-is-hidden')
             } catch (error) {
-                console.error("Failed to render note-picker menu options:", error);
+                console.error("Failed to render note-picker menu options:", error)
             }
         })
 
@@ -2016,7 +2332,9 @@ export const EditorView = {
             menuList[i].addEventListener('mouseenter', () => {
                 if (!submenuList[i].hasAttribute('data-is-visible')) {
                     submenuList.forEach(submenu => submenu.removeAttribute('data-is-visible'))
+                    menuList.forEach(menu => menu.removeAttribute('data-is-selected'))
                     submenuList[i].toggleAttribute('data-is-visible')
+                    menuList[i].toggleAttribute('data-is-selected')
                 }
             })
         }
@@ -2148,7 +2466,8 @@ export const EditorView = {
                 await noteService.updateNote(currentNoteId, updates)
                 console.log("Saved successfully!")
             } catch (err) {
-                console.error("Save failed", err);
+                console.error("Save failed", err)
+                await EditorView.alertModal("It seems like we couldn't save your file.", 'error')
             }
         })
 
@@ -2303,13 +2622,18 @@ export const EditorView = {
                     if (tabsDisplay.getAttribute('data-tab-showing') === tabNamesList[i]) {
                         // Same tab so we close the tab display
                         clearTabDisplay()
+                        tabsList[i].classList.remove('tab-active')
                         tabsDisplay.toggleAttribute('data-is-visible')
                     } else {
+                        // Switch the active tab
+                        tabsList.forEach(tab => tab.classList.remove('tab-active'))
+                        tabsList[i].classList.add('tab-active')
                         // Display new tab content
                         tabsDisplay.setAttribute('data-tab-showing', tabNamesList[i])
                         switchTabDisplay(tabNamesList[i])
                     }
                 } else {
+                    tabsList[i].classList.add('tab-active')
                     tabsDisplay.setAttribute('data-tab-showing', tabNamesList[i])
                     tabsDisplay.toggleAttribute('data-is-visible')
                     switchTabDisplay(tabNamesList[i])

@@ -1,2 +1,24 @@
+// Themes
+[data-theme = "default"] {
+    // General
+    --bg: #d0def4;
+    --accent1: #3964a3;
+    --accent2: #2a4c7e;
+    // Buttons
+    --btn: #516eff;
+    --btn-hover: #5e78ff;
+    --red: #ff6b6b;
+    --red-hover: #ff8080;
+    --green: #36e792;
+    --green-hover: #00ffcc;
+    // Highlights
+    --note-item-hover: #516eff30;
+    --item-active: #516eff15;
+    // Text
+    --text: #ffffff;
+    --text-alt: #000000;
+}
+
+
 // Layout tokens
 $header-height: 150px;

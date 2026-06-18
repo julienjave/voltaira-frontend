@@ -51,7 +51,14 @@
         <!-- HEADER ----------------------------------------------------------------->
         <div class="header">
             <!-- LOGO -->
-            <div id="logo-container">VOLTAIRA</div>
+            <div id="logo-container">
+                <div class="app-title">
+                    <div class="app-name">
+                        <svg><use href="#icon-logo"/></svg>
+                        Voltaira
+                    </div> 
+                </div>
+            </div>
             <!-- MENU -->
             <div id="header-main">
                 <!-- Main options -->
@@ -66,7 +73,9 @@
                             <button id="delete-account-btn">Delete account</button>
                         </div>
                     </div>
-                    <button id="logout-btn">Log out</button>
+                    <button id="logout-btn" class="logout-btn">
+                        <svg><use href="#icon-logout"/></svg>
+                        Logout</button>
                 </div>
                 <!-- Submenu -->
                 <div id="sub-menu">
@@ -409,7 +418,8 @@
                             <span class="subtitle">Create New Tag</span>
                             <div class="tag-creation-form">
                                 <input type="text" id="new-tag-name-input" placeholder="tag-name" />
-                                <input type="color" id="new-tag-color-input" value="#00ffcc" />
+                                <label for="new-tag-color-input">Assign color:</label>
+                                <input type="color" id="new-tag-color-input" value="#00AAFF" />
                                 <button id="submit-new-tag-btn">Create</button>
                             </div>
                         </div>
@@ -507,17 +517,35 @@
             </div>
         </div>
     </section>
-    <!-- Single layout container repurposed for ALL modal prompts -->
+    <!-- Single layout container repurposed for ALL modal form prompts -->
     <div id="editor-modal-overlay" class="modal-overlay is-hidden">
         <div class="modal-card">
             <h3 id="editor-modal-title">Insert Resource</h3>
             <form id="editor-modal-form">
                 <div id="editor-modal-fields" class="modal-fields-group"></div>
                 <div class="modal-actions-toolbar">
-                    <button type="button" id="editor-modal-cancel" class="btn-text">Cancel</button>
                     <button type="submit" id="editor-modal-submit" class="btn-primary">Confirm</button>
+                    <button type="button" id="editor-modal-cancel" class="btn-text">
+                        <svg><use href="#icon-error"/></svg>
+                        Cancel
+                    </button>
                 </div>
             </form>
+        </div>
+    </div>
+    <!-- Single layout container repurposed for ALL modal information/error prompts -->
+    <div id="editor-modal-overlay-info" class="modal-overlay is-hidden">
+        <div class="modal-card">
+            <h3 id="editor-modal-title-info">Insert Resource</h3>
+            <div id="editor-modal-content">
+                <div id="editor-modal-info-message" class="modal-info-message">
+                    <div class="modal-info-icon" id="modal-info-icon">
+                        <!-- Will display a different svg depending on the nature of the message -->
+                    </div>
+                    <div class="modal-info-text" id="modal-info-text"></div>
+                </div>
+                <button type="button" id="editor-modal-ok-btn" class="btn-text">Ok</button>
+            </div>
         </div>
     </div>
 </div>

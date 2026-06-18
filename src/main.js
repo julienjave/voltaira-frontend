@@ -51,6 +51,7 @@ async function handleDeleteAccount() {
                 label: "This action is permanent and will completely erase your notes and tags. To proceed, please type 'DELETE' in the field below:",
                 type: 'text',
                 placeholder: 'DELETE',
+                required: true,
                 defaultValue: ''
             }
         ]
@@ -69,7 +70,7 @@ async function handleDeleteAccount() {
 
         // Case B: The user typed something else -> guard against accident or typos
         if (modalResult.verification !== 'DELETE') {
-            alert("Verification failed. You must type 'DELETE' exactly to confirm.")
+            await EditorView.alertModal("Verification failed. You must type 'DELETE' exactly to confirm.", 'error')
             return
         }
 
@@ -78,16 +79,15 @@ async function handleDeleteAccount() {
         const result = await userService.deleteUserAccount()
 
         if (result.success) {
-            alert(result.message || "Your account has been deleted.")
+            await EditorView.alertModal(result.message || "Your account has been deleted.", 'success')
             
-            // Redirect the user back to the entry gate reloader.
-            // Passport session deletion on the backend ensures they hit the login form.
-            window.location.href = '/login.html'
+            // Trigger our built-in SPA state-wipe and route transition
+            onLogoutSuccess()
         }
 
     } catch (error) {
         console.error("Failed to execute account deletion sequence:", error.message)
-        alert(`Deletion Error: ${error.message}`)
+        await EditorView.alertModal(`Deletion Error: ${error.message}`, 'error')
     }
 }
 

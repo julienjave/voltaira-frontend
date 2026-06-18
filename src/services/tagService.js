@@ -75,7 +75,7 @@ export const tagService = {
                 throw new Error('Failed to purge tag from system database')
             }
 
-            return await response.json(); // Returns { message: "Tag deleted successfully" }
+            return await response.json() // Returns { message: "Tag deleted successfully" }
         } catch (error) {
             console.error(`tagService.deleteTagById error for ID ${tagId}:`, error)
             throw error
