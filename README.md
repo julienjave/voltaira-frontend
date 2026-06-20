@@ -2,7 +2,7 @@
 
 **Voltaira** is a lightweight, distraction-free **Markdown text editor** designed for fluid, non-linear thinking. Built for developers, writers, and researchers, Voltaira strips away the bloat of traditional word processors, providing a fast, responsive, and connected workspace where ideas can be captured, tagged, and organized instantly.
 
-LIVE DEMO
+[Live Demo](https://julienjave.github.io/voltaira-frontend/)
 
 
 ## 1. Key Features
