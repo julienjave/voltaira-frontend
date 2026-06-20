@@ -15,12 +15,15 @@
 */
 
 
+
+const BASE_API_URL = import.meta.env.VITE_BASE_URL || 'https://voltaira-backend.onrender.com'
+
 export const authService = {
 
     // --- REGISTER ---
     register: async (username, email, password) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/register`, {
+            const response = await fetch(`${BASE_API_URL}/auth/register`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -48,7 +51,7 @@ export const authService = {
     // --- LOGIN ---
     login: async (username, password) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/login`, {
+            const response = await fetch(`${BASE_API_URL}/auth/login`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -69,7 +72,7 @@ export const authService = {
     // --- LOGOUT ---
     logout: async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/logout`, {
+            const response = await fetch(`${BASE_API_URL}/auth/logout`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' }

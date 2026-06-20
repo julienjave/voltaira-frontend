@@ -15,6 +15,8 @@
 */
 
 
+const BASE_API_URL = import.meta.env.VITE_BASE_URL || 'https://voltaira-backend.onrender.com'
+
 // --- HELPER FUNCTION ---------------------------------------------------------------------------------------
 
 // Reusable configuration options to keep code DRY (Don't Repeat Yourself)
@@ -40,7 +42,7 @@ export const userService = {
     // Delete User Account
     deleteUserAccount: async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/users/me`, fetchConfig('DELETE'))
+            const response = await fetch(`${BASE_API_URL}/users/me`, fetchConfig('DELETE'))
 
             if (!response.ok) {
                 const errorBody = await response.json().catch(() => ({}))

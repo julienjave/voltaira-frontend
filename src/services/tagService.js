@@ -15,6 +15,8 @@
 */
 
 
+const BASE_API_URL = import.meta.env.VITE_BASE_URL || 'https://voltaira-backend.onrender.com'
+
 // --- HELPER FUNCTION ---------------------------------------------------------------------------------------
 
 // Reusable configuration options to keep code DRY (Don't Repeat Yourself)
@@ -38,7 +40,7 @@ const fetchConfig = (method, bodyData = null) => {
 export const tagService = {
     getAllTags: async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/tags`, fetchConfig('GET'))
+            const response = await fetch(`${BASE_API_URL}/tags`, fetchConfig('GET'))
 
             if (!response.ok) {
                 throw new Error('Failed to fetch the global tag library')
@@ -53,7 +55,7 @@ export const tagService = {
 
     createTag: async (tagData) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/tags`, fetchConfig('POST', tagData))
+            const response = await fetch(`${BASE_API_URL}/tags`, fetchConfig('POST', tagData))
 
             if (!response.ok) {
                 const errorData = await response.json()
@@ -70,7 +72,7 @@ export const tagService = {
 
     updateTag: async (tagId, tagData) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/tags/${tagId}`, fetchConfig('PATCH', tagData))
+            const response = await fetch(`${BASE_API_URL}/tags/${tagId}`, fetchConfig('PATCH', tagData))
 
             if (!response.ok) {
                 const errorData = await response.json()
@@ -86,7 +88,7 @@ export const tagService = {
 
     deleteTagById: async (tagId) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/tags/${tagId}`, fetchConfig('DELETE'))
+            const response = await fetch(`${BASE_API_URL}/tags/${tagId}`, fetchConfig('DELETE'))
 
             if (!response.ok) {
                 throw new Error('Failed to purge tag from system database')
