@@ -5,6 +5,12 @@
 [Live Demo](https://julienjave.github.io/voltaira-frontend/)
 
 
+## Repository Ecosystem
+This project is built using a completely decoupled, headless architecture. To review the complete system, explore both repositories:
+- **Client Application (This Repo):** [https://github.com/julienjave/voltaira-frontend](https://github.com/julienjave/voltaira-frontend)
+- **API Data Service (Backend):** [https://github.com/julienjave/voltaira-backend](https://github.com/julienjave/voltaira-backend)
+
+
 ## 1. Key Features
 
 ### Intelligent Workspace & Editing
