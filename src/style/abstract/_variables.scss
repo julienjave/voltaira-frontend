@@ -4,19 +4,123 @@
     --bg: #d0def4;
     --accent1: #3964a3;
     --accent2: #2a4c7e;
+    // Logo
+    --logo: #2a4c7e;
     // Buttons
     --btn: #516eff;
     --btn-hover: #5e78ff;
     --red: #ff6b6b;
     --red-hover: #ff8080;
-    --green: #36e792;
-    --green-hover: #00ffcc;
+    --green: #00af5b;
+    --green-hover: #29d180;
+    --toggle: #d0def4;
     // Highlights
     --note-item-hover: #516eff30;
     --item-active: #516eff15;
     // Text
     --text: #ffffff;
     --text-alt: #000000;
+    // Input, Areas
+    --input-area: #ffffff;
+    // Tooltips
+    --tooltip: #143059;
+}
+
+[data-theme = "curcuma"] {
+    // General
+    --bg: #f1f4d0;
+    --accent1: #ffaf02;
+    --accent2: #d08e00;
+    // Logo
+    --logo: #2a4c7e;
+    // Buttons
+    --btn: #ff9a51;
+    --btn-hover: #ffb27b;
+    --red: #ff6b6b;
+    --red-hover: #ff8080;
+    --green: #00af5b;
+    --green-hover: #29d180;
+    --toggle: #d0def4;
+    // Highlights
+    --note-item-hover: #ff9a5130;
+    --item-active: #ff9a5115;
+    // Text
+    --text: #ffffff;
+    --text-alt: #000000;
+    // Input, Areas
+    --input-area: #ffffff;
+    // Tooltips
+    --tooltip: #593a14;
+}
+
+[data-theme = "vanille-fraise"] {
+    // General
+    --bg: #ff9ed8;
+    --accent1: #ff2baa;
+    --accent2: #f0ba1b;
+    // Logo
+    --logo: #2a4c7e;
+    // Buttons
+    --btn: #ffda09;
+    --btn-hover: #ffe762;
+    --red: #ff6b6b;
+    --red-hover: #ff8080;
+    --green: #00af5b;
+    --green-hover: #29d180;
+    --toggle: #fe00a9;
+    // Highlights
+    --note-item-hover: #ffda0930;
+    --item-active: #ffda0915;
+    // Text
+    --text: #ffffff;
+    --text-alt: #000000;
+    // Input, Areas
+    --input-area: #ffffff;
+    // Tooltips
+    --tooltip: #59143f;
+}
+
+[data-theme = "lime"] {
+    // General
+    --bg: #93d69c;
+    --accent1: #00a216;
+    --accent2: #008111;
+    // Logo
+    --logo: #2a4c7e;
+    // Buttons
+    --btn: #00680e;
+    --btn-hover: #72c36f;
+    --red: #ff6b6b;
+    --red-hover: #ff8080;
+    --green: #00af5b;
+    --green-hover: #29d180;
+    --toggle: #93d69c;
+    // Highlights
+    --note-item-hover: #00680e30;
+    --item-active: #00680e15;
+    // Text
+    --text: #ffffff;
+    --text-alt: #000000;
+    // Input, Areas
+    --input-area: #ffffff;
+    // Tooltips
+    --tooltip: #145935;
+}
+
+// Mode
+[data-mode = 'dark'] {
+    // General
+    --bg: #46425e;
+    // Logo
+    --logo: #d0def4;
+    // Highlights
+    --note-item-hover: #516eff30;
+    --item-active: #516eff15;
+    // Text
+    --text: #ffffff;
+    --text-alt: #ffffff;
+    // Input, Areas
+    --input-area: #46425e;
 }
 
 

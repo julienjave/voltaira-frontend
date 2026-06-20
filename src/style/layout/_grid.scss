@@ -24,11 +24,6 @@
     span {
         display: flex;
     }
-
-    #splash-username {
-        margin-left: 5px;
-        font-weight: 600;
-    }
 }
 
 .splash-header, .splash-instructions {
@@ -73,6 +68,8 @@
 #logo-container, #header-main {
     @include mixins.flex-layout;
     height: 100%;
+    position: relative;
+    z-index: 100;
 }
 
 #logo-container {
@@ -137,11 +134,4 @@
     width: 90%;
     height: 100%;
     background-color: var(--accent2);
-
-    textarea {
-        width: 95%;
-        height: 100%;
-        resize: none;
-        margin-bottom: 10px;
-    }
 }

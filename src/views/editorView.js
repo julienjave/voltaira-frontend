@@ -1,3 +1,20 @@
+/*
+    Copyright 2026 Julien Javelaud
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+
 // === Note Editor page ===
 
 // --- IMPORTS --------------------------------------------------------------------------------
@@ -489,6 +506,7 @@ export const EditorView = {
             // 1. Grab our DOM hooks
             const overlay = document.getElementById('editor-modal-overlay-info')
             const titleEl = document.getElementById('editor-modal-title-info')
+            const messageEl = document.getElementById('editor-modal-info-message')
             const textEl = document.getElementById('modal-info-text')
             const iconContainer = document.getElementById('modal-info-icon')
             const okBtn = document.getElementById('editor-modal-ok-btn')
@@ -500,9 +518,9 @@ export const EditorView = {
 
             // 2. Define our SVG graphics dictionary dynamically
             const icons = {
-                error: `<svg><use href="#icon-error /></svg>`,
-                success: `<svg><use href="#icon-success /></svg>`,
-                info: `<svg><use href="#icon-info /></svg>`
+                error: `<svg><use href="#icon-error"/></svg>`,
+                success: `<svg><use href="#icon-success"/></svg>`,
+                info: `<svg><use href="#icon-info"/></svg>`
             }
 
             // 3. Define the auto-titles matching the nature of the event
@@ -518,8 +536,8 @@ export const EditorView = {
             iconContainer.innerHTML = icons[type] || icons.info
 
             // Remove previous theme classes and apply the current active styling context
-            overlay.classList.remove('theme-error', 'theme-success', 'theme-info')
-            overlay.classList.add(`theme-${type}`)
+            messageEl.classList.remove('theme-error', 'theme-success', 'theme-info')
+            messageEl.classList.add(`theme-${type}`)
 
             // 5. Build clean, disposable closing event hooks
             const cleanUpAndClose = () => {
@@ -571,7 +589,7 @@ export const EditorView = {
             
             // 2. Clear old input elements, and insert a simple descriptive text node instead
             fieldsContainer.innerHTML = `
-                <div class="modal-info-message">
+                <div class="modal-info-message theme-warning">
                     <div class="modal-info-icon">
                         <svg><use href="#icon-warning"/></svg>
                     </div>
@@ -580,7 +598,7 @@ export const EditorView = {
             `
 
             // Save original submit button text, then change it to what we need (e.g., "Delete")
-            const originalSubmitText = submitBtn ? submitBtn.textContent : "Submit"
+            const originalSubmitText = submitBtn ? submitBtn.innerHTML : "Submit"
             if (submitBtn) {
                 let svgIcon = ``
                 if (confirmText.toLowerCase() === 'delete') {
@@ -610,7 +628,7 @@ export const EditorView = {
                 
                 // Restore original button attributes
                 if (submitBtn) {
-                    submitBtn.textContent = originalSubmitText
+                    submitBtn.innerHTML = originalSubmitText
                     submitBtn.classList.remove('btn-danger')
                 }
                 
@@ -642,43 +660,106 @@ export const EditorView = {
     },
 
     // Launches a non-blocking HTML modal interface and suspends execution until resolved.
-    promptCustomModal: (title, fieldConfigs) => {
+    promptCustomModal: (title, fieldConfigs, deleteAccount=false) => {
         return new Promise((resolve) => {
             const overlay = document.getElementById('editor-modal-overlay')
+            const modalCard = document.getElementById('editor-modal-card')
             const titleEl = document.getElementById('editor-modal-title')
             const fieldsContainer = document.getElementById('editor-modal-fields')
             const form = document.getElementById('editor-modal-form')
-            const cancelBtn = document.getElementById('editor-modal-cancel')
-            
-            // GRAB THE SHARED SUBMIT BUTTON ROW TO CLEAR THE LEAK
+            const cancelBtn = document.getElementById('editor-modal-cancel')    
             const submitBtn = form?.querySelector('button[type="submit"]') || 
                             form?.querySelector('.btn-submit') || 
-                            document.getElementById('editor-modal-submit');
+                            document.getElementById('editor-modal-submit')
+
+            if (deleteAccount) {
+                modalCard.classList.add('danger')
+            }
 
             if (!overlay || !form || !fieldsContainer) return resolve(null)
 
-            // 1. Inject setup config attributes
             titleEl.textContent = title
             fieldsContainer.innerHTML = '' // Wipe old elements
 
-            // 2. Generate fields dynamically
+            // 1. Generate fields dynamically
             fieldConfigs.forEach(field => {
                 const labelNode = document.createElement('label')
+                labelNode.className = 'modal-field-wrapper'
                 
                 if (field.type === 'select') {
+                    // Find matching initial label text configuration parameters
+                    const initialSelectedOpt = field.options.find(opt => opt.value === field.defaultValue) || field.options[0];
+                    
+                    // Generate structural options list rows
                     const optionsMarkup = field.options.map(opt => `
-                        <option value="${opt.value}" ${opt.value === field.defaultValue ? 'selected' : ''}>
+                        <div class="custom-dropdown-option ${opt.value === field.defaultValue ? 'is-selected' : ''}" data-value="${opt.value}">
                             ${opt.label}
-                        </option>
+                        </div>
                     `).join('')
 
+                    // CUSTOM SELECTION SHELL INTERFACE ARCHITECTURE:
                     labelNode.innerHTML = `
-                        ${field.label}
-                        <select name="${field.key}" ${field.required ? 'required' : ''}>${optionsMarkup}</select>
+                        <span class="field-label-text">${field.label}</span>
+                        <div class="custom-dropdown-container" id="dropdown-${field.key}">
+                            <div class="custom-dropdown-trigger">
+                                <span class="trigger-text">${initialSelectedOpt ? initialSelectedOpt.label : 'Select an option'}</span>
+                                <span class="trigger-caret"><svg><use href="#icon-dropdown"/></svg></span>
+                            </div>
+                            <div class="custom-dropdown-menu is-hidden">
+                                ${optionsMarkup}
+                            </div>
+                            <input type="hidden" name="${field.key}" value="${initialSelectedOpt ? initialSelectedOpt.value : ''}" ${field.required ? 'required' : ''} />
+                        </div>
                     `
+                    
+                    fieldsContainer.appendChild(labelNode)
+
+                    // Bind isolated interaction event listeners immediately onto our newly created dropdown interface DOM nodes
+                    const dropdownContainer = labelNode.querySelector('.custom-dropdown-container')
+                    const trigger = dropdownContainer.querySelector('.custom-dropdown-trigger')
+                    const menu = dropdownContainer.querySelector('.custom-dropdown-menu')
+                    const hiddenInput = dropdownContainer.querySelector('input[type="hidden"]')
+                    const triggerText = dropdownContainer.querySelector('.trigger-text')
+                    const optionNodes = dropdownContainer.querySelectorAll('.custom-dropdown-option')
+
+                    // Toggle menu visibility when clicking the trigger element box surface layout
+                    trigger.addEventListener('click', (e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        
+                        // Close any other open dropdowns inside the container to insulate the UI layout space
+                        fieldsContainer.querySelectorAll('.custom-dropdown-menu').forEach(openMenu => {
+                            if (openMenu !== menu) openMenu.classList.add('is-hidden')
+                        })
+                        
+                        menu.classList.remove('is-hidden')
+                    })
+
+                    // Handle picking a custom row state change sequence parameters
+                    optionNodes.forEach(option => {
+                        option.addEventListener('click', (e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+
+                            const newValue = option.getAttribute('data-value')
+                            const newLabel = option.textContent.trim()
+
+                            // Update text and synchronization payload tracks instantly
+                            hiddenInput.value = newValue
+                            triggerText.textContent = newLabel
+
+                            // Update option active focus indicator highlights cleanly
+                            optionNodes.forEach(opt => opt.classList.remove('is-selected'))
+                            option.classList.add('is-selected')
+
+                            // Close selection menu layer safely
+                            menu.classList.add('is-hidden')
+                        })
+                    })
+
                 } else {
                     labelNode.innerHTML = `
-                        ${field.label}
+                        <span class="field-label-text">${field.label}</span>
                         <input 
                             type="${field.type || 'text'}" 
                             name="${field.key}" 
@@ -689,21 +770,27 @@ export const EditorView = {
                             ${field.required ? 'required' : ''} 
                         />
                     `
+                    fieldsContainer.appendChild(labelNode)
                 }
-                fieldsContainer.appendChild(labelNode)
             })
 
-            // 3. Make the modal visible
+            // Global safety click catcher to auto-dismiss open menus when clicking away outside the boundaries
+            const dismissDropdownMenus = (e) => {
+                if (!e.target.closest('.custom-dropdown-container')) {
+                    fieldsContainer.querySelectorAll('.custom-dropdown-menu').forEach(menu => menu.classList.add('is-hidden'))
+                }
+            }
+            document.addEventListener('click', dismissDropdownMenus)
+
             overlay.classList.remove('is-hidden')
-            
-            // Auto-focus the first text element for seamless input sequence
-            fieldsContainer.querySelector('input')?.focus()
+            fieldsContainer.querySelector('input:not([type="hidden"])')?.focus()
 
             // 4. Teardown wrapper to clean up event listeners and hide the overlay
             const close = (outputValue) => {
                 overlay.classList.add('is-hidden')
+                modalCard.classList.remove('danger')
+                document.removeEventListener('click', dismissDropdownMenus) // Evacuate leaky listeners
                 
-                // Wipe absolute shared tracking parameters completely
                 if (submitBtn) submitBtn.onclick = null
                 form.onsubmit = null
                 cancelBtn.onclick = null
@@ -713,8 +800,6 @@ export const EditorView = {
 
             // 5. Connect resolution triggers
             form.onsubmit = (e) => {
-                // CRITICAL INSULATION: Absolute first line execution guard 
-                // completely locks down the browser against native page reloads!
                 e.preventDefault()
                 e.stopPropagation()
                 
@@ -741,15 +826,8 @@ export const EditorView = {
 
             if (submitBtn) {
                 submitBtn.onclick = (e) => {
-                    // If this is a standard form button, clicking it automatically triggers 'onsubmit'.
-                    // If it's a loose button, let's process submission safely without dispatchEvent traps.
-                    if (!form.checkValidity()) {
-                        // Let native browser validation tooltips show up if a required field is missing
-                        return
-                    }
+                    if (!form.checkValidity()) return
                     
-                    // If our submit button is structured as a <button type="button"> instead of "submit",
-                    // we manually trigger our safe object method instead of risking a buggy native event dispatch:
                     if (submitBtn.getAttribute('type') !== 'submit') {
                         e.preventDefault()
                         e.stopPropagation()
@@ -948,7 +1026,7 @@ export const EditorView = {
             item.className = `link-item ${link.isGhost ? 'is-ghost' : 'is-live'}`
             
             item.innerHTML = `
-                <span class="link-icon">${link.isGhost ? '👻' : '🔗'}</span>
+                <span class="link-icon"><svg><use href="#${link.isGhost ? 'icon-ghost' : 'icon-links'}"/></svg></span>
                 <span class="link-label">${link.display}</span>
             `
 
@@ -1033,7 +1111,7 @@ export const EditorView = {
             }
 
             navLink.innerHTML = `
-                <span class="nav-item-icon">📄</span>
+                <span class="nav-item-icon"><svg><use href="#icon-note"/></svg></span>
                 <span class="nav-item-title">${note.title || 'Untitled Note'}</span>
             `
 
@@ -1047,17 +1125,17 @@ export const EditorView = {
             })
             // Click event to delete corresponding note
             deleteNoteBtn.addEventListener('click', async (e) => {
-                // 🎯 DIAGNOSTIC CHECK: Stop the event from bubbling up to the nav link row
-                e.stopPropagation();
+                // Stop the event from bubbling up to the nav link row
+                e.stopPropagation()
 
-                // 🎯 PROTECTION LOCK: Ensure this event ONLY belongs to the explorer sidebar trash button!
+                // PROTECTION LOCK: Ensure this event ONLY belongs to the explorer sidebar trash button!
                 // If the event target is inside the modal wrapper, block execution instantly.
                 if (e.target.closest('#editor-modal-overlay') || e.target.closest('#editor-modal-form')) {
-                    console.warn("⚠️ Deletion blocked: Intercepted a stray event bubbling from the modal overlay layout.");
-                    return;
+                    console.warn("⚠️ Deletion blocked: Intercepted a stray event bubbling from the modal overlay layout.")
+                    return
                 }
 
-                console.log("🥬 Trash icon clicked for note:", note.title)
+                console.log("Trash icon clicked for note:", note.title)
 
                 const targetIdToDelete = note._id
                 const targetTitleToDelete = note.title || 'Untitled Note'
@@ -1258,7 +1336,9 @@ export const EditorView = {
             })
 
             // Delete Tag Logic
-            chipDeleteBtn.addEventListener('click', async () => {
+            chipDeleteBtn.addEventListener('click', async (e) => {
+                e.stopPropagation()
+
                 const confirmed = await EditorView.confirmModal(
                     `Delete Tag?`,
                     `Are you sure you want to permanently delete the tag ${tag.name}? This cannot be undone.`,
@@ -1274,15 +1354,29 @@ export const EditorView = {
                 try {
                     console.log(`Executing deletion pipeline for tag ID: ${tag._id}`)
                     const result = await tagService.deleteTagById(tag._id)
-                    
-                    if (result.success) {
-                        // Re-render tag manager panel interface
-                        EditorView.renderTagManager()
-                        // Inform user via notification alert modal
-                        await EditorView.alertModal("Tag removed successfully.", "success")
+                    console.log("Tag server raw response data received:", result)
+
+                    // Remove the deleted tag from our global tracking cache array in memory
+                    if (typeof cachedTags !== 'undefined') {
+                        const targetTagId = tag._id
+                        const freshTagIndex = cachedTags.findIndex(t => (t._id || t.id) === targetTagId)
+                        if (freshTagIndex !== -1) {
+                            cachedTags.splice(freshTagIndex, 1)
+                            console.log("Tag removed safely from cachedTags state tracking array.")
+                        }
                     }
+
+                    // 1. Re-render the tag manager panel interface with the updated cache array
+                    EditorView.renderTagInspector()
+                    
+                    // 2. Inform user via notification alert modal using your backend payload string
+                    await EditorView.alertModal(result.message || "Tag removed successfully.", "success")
+                    
                 } catch (error) {
-                    await EditorView.alertModal(`Failed to delete tag: ${error.message}`, "error")
+                    console.error("❌ Tag deletion render crash intercepted:", error)
+                    
+                    // Fallback to prevent layout updates from showing false network error warnings
+                    await EditorView.alertModal(`Failed to update tag layouts: ${error.message}`, "error")
                 }
             })
 
@@ -2009,20 +2103,28 @@ export const EditorView = {
             listContainer.className = 'modal-notes-list'
 
             if (!notes || notes.length === 0) {
-                listContainer.innerHTML = `<p class="modal-empty-text">No notes currently saved in your workspace.</p>`
+                listContainer.innerHTML = `
+                    <span class="modal-note-item" style="cursor: default; color: #8d8d99; justify-content: center;">
+                        No notes currently saved in your workspace.
+                    </span>`
             } else {
                 notes.forEach(note => {
-                    const rowButton = document.createElement('button')
-                    rowButton.type = 'button'
-                    rowButton.className = 'modal-note-item'
-                    rowButton.textContent = note.title || 'Untitled Document'
+                    const modalListItem = document.createElement('div')
+                    modalListItem.className = 'open-note-item'
+                    
+                    modalListItem.innerHTML = `
+                        <span class="nav-item-icon"><svg><use href="#icon-note"/></svg></span>
+                        <span class="nav-item-title">${note.title || 'Untitled Note'}</span>
+                    `
                     
                     // 3. Capture instant click row transitions
-                    rowButton.onclick = () => {
+                    modalListItem.addEventListener('click', (e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
                         closePipeline(note)
-                    };
+                    })
 
-                    listContainer.appendChild(rowButton)
+                    listContainer.appendChild(modalListItem)
                 })
             }
 
@@ -2032,14 +2134,26 @@ export const EditorView = {
             // 4. Unified closure and clean-up routine
             const closePipeline = (selectedNotePayload) => {
                 overlay.classList.add('is-hidden')
-                if (submitBtn) submitBtn.style.display = '' // Restore structural form setup parameters
+                
+                if (submitBtn) {
+                    submitBtn.style.display = '' // Restore layout parameters
+                    submitBtn.onclick = null     // Clear lingering event overrides
+                }
+                
                 cancelBtn.onclick = null
                 form.onsubmit = null
+                
                 resolve(selectedNotePayload)
             }
 
-            cancelBtn.onclick = () => closePipeline(null)
-            form.onsubmit = (e) => e.preventDefault() // Trap unintentional enter keys
+            cancelBtn.onclick = (e) => {
+                e.preventDefault()
+                closePipeline(null)
+            }
+            
+            form.onsubmit = (e) => {
+                e.preventDefault() // Trap unintentional enter key fires safely
+            }
         })
     },
 
@@ -2069,29 +2183,63 @@ export const EditorView = {
     },
 
     // Targets the rendered markdown HTML preview layout panel and prints it to a downloadable PDF document
+    // exportToPDF: (noteTitle, previewElementId = "note-preview-container") => {
+    //     // Target the specific container where our compiled HTML output lives
+    //     const targetPreviewDOM = document.getElementById(previewElementId)
+        
+    //     if (!targetPreviewDOM) {
+    //         console.error(`PDF Export aborted: Layout node '#${previewElementId}' not found.`)
+    //         return
+    //     }
+
+    //     const cleanTitle = (noteTitle || "Voltaira-Export").trim().replace(/[^a-z0-9]/gi, '_')
+    //     const filename = `${cleanTitle}.pdf`
+
+    //     // Configure high-fidelity compilation options for html2pdf
+    //     const exportOptions = {
+    //         margin:        0.75, // Adds margins matching standard printer paper rules
+    //         filename:      filename,
+    //         image:         { type: 'jpeg', quality: 0.98 },
+    //         html2canvas:   { scale: 2, useCORS: true, logging: false }, // Scale 2 ensures crystal clear text rendering
+    //         jsPDF:         { unit: 'in', format: 'letter', orientation: 'portrait' }
+    //     }
+
+    //     // Execute the asynchronous conversion stream
+    //     html2pdf().set(exportOptions).from(targetPreviewDOM).save()
+    // },
+
     exportToPDF: (noteTitle, previewElementId = "note-preview-container") => {
-        // Target the specific container where our compiled HTML output lives
-        const targetPreviewDOM = document.getElementById(previewElementId)
+        // If you are using a different ID for your preview pane, pass it in here.
+        // Based on standard layouts, we'll locate your markdown viewer surface.
+        const targetPreviewDOM = document.getElementById(previewElementId);
         
         if (!targetPreviewDOM) {
-            console.error(`PDF Export aborted: Layout node '#${previewElementId}' not found.`)
-            return
+            console.error(`PDF Export aborted: Layout node '#${previewElementId}' not found.`);
+            return;
         }
 
-        const cleanTitle = (noteTitle || "Voltaira-Export").trim().replace(/[^a-z0-9]/gi, '_')
-        const filename = `${cleanTitle}.pdf`
+        // 🎯 STEP 1: Set the saved file metadata name safely
+        const cleanTitle = (noteTitle || "Voltaira-Export").trim();
+        const originalTitle = document.title;
+        document.title = cleanTitle;
 
-        // Configure high-fidelity compilation options for html2pdf
-        const exportOptions = {
-            margin:        0.75, // Adds margins matching standard printer paper rules
-            filename:      filename,
-            image:         { type: 'jpeg', quality: 0.98 },
-            html2canvas:   { scale: 2, useCORS: true, logging: false }, // Scale 2 ensures crystal clear text rendering
-            jsPDF:         { unit: 'in', format: 'letter', orientation: 'portrait' }
-        }
+        // 🎯 STEP 2: DYNAMIC TITLE INJECTION
+        // Create a concrete layout heading for the native print subsystem to process
+        const printTitleH1 = document.createElement('h1');
+        printTitleH1.className = 'pdf-only-main-title';
+        printTitleH1.textContent = cleanTitle;
+        targetPreviewDOM.insertBefore(printTitleH1, targetPreviewDOM.firstChild);
 
-        // Execute the asynchronous conversion stream
-        html2pdf().set(exportOptions).from(targetPreviewDOM).save()
+        // 🎯 STEP 3: Inject the state flag to the root <body> to trigger clean CSS isolation
+        document.body.classList.add('is-printing-pdf');
+
+        // 🎯 STEP 4: Open the native browser print/save menu
+        window.print();
+
+        // 🎯 STEP 5: TEARDOWN CLEANUP
+        document.body.classList.remove('is-printing-pdf');
+        document.title = originalTitle;
+        printTitleH1.remove(); // Instantly vanishes from the active screen view
     },
 
     // Initialize the Delete Account event listener
@@ -2237,13 +2385,13 @@ export const EditorView = {
         // --- SPLASH PANEL -----------------
 
         // --- VARIABLES ---
-        const splashUsername = document.getElementById('splash-username')
         const splashCreate = document.getElementById('splash-create')
         const splashOpen = document.getElementById('splash-open')
         const splashBackBtn = document.getElementById('splash-picker-back')
         const splashNotesList = document.getElementById('splash-notes-list')
         const splashDefaultShell = document.getElementById('splash-default-options')
         const splashNotePickerShell = document.getElementById('splash-note-picker')
+
 
         // === OPTIONS ===
         // --- CREATE ---
@@ -2276,7 +2424,7 @@ export const EditorView = {
                         const splashListItem = document.createElement('div')
                         splashListItem.className = 'splash-note-item'
                         splashListItem.innerHTML = `
-                            <span class="nav-item-icon">📄</span>
+                            <span class="nav-item-icon"><svg><use href="#icon-note"/></svg></span>
                             <span class="nav-item-title">${note.title || 'Untitled Note'}</span>
                         `
 
@@ -2315,17 +2463,15 @@ export const EditorView = {
         const fileBtn = document.getElementById('menu-file')
         const toolsBtn = document.getElementById('menu-tools')
         const settingsBtn = document.getElementById('menu-settings')
-        const helpBtn = document.getElementById('menu-help')
         const profileBtn = document.getElementById('menu-profile')
         // Submenu
         const fileMenu = document.getElementById('sub-file')
         const toolsMenu = document.getElementById('sub-tools')
         const settingsMenu = document.getElementById('sub-settings')
-        const helpMenu = document.getElementById('sub-help')
         const profileMenu = document.getElementById('profile-options')
         // Lists
-        const menuList = [fileBtn, toolsBtn, settingsBtn, helpBtn]
-        const submenuList = [fileMenu, toolsMenu, settingsMenu, helpMenu]
+        const menuList = [fileBtn, toolsBtn, settingsBtn]
+        const submenuList = [fileMenu, toolsMenu, settingsMenu]
 
         // --- EVENT LISTENERS ---
         for (let i=0; i<menuList.length; i++) {
@@ -2347,6 +2493,7 @@ export const EditorView = {
         profileBtn.addEventListener('mouseleave', () => {
             profileMenu.classList.remove('is-open')
         })
+
 
         // === SUBMENU ===
         // --- VARIABLES ---
@@ -2425,7 +2572,7 @@ export const EditorView = {
 
         const infoList = [infoCreate, infoOpen, infoSave, infoExport, infoExport, infoRedo, infoRedo, infoClipboard, infoClipboard, infoClipboard, infoSelect, infoSearch, infoMove, infoMove, infoStyle, infoStyle, infoStyle, infoStyle, infoEffects, infoEffects, infoFormat, infoFormat, infoFormat, infoFormat, infoFormat, infoInsert, infoInsert, infoInsert, infoInsert, infoInsert, infoView, infoView, infoView]
 
-        const messagesList = ['Create a new file', 'Open a file', 'Save your file', 'Export as .md', 'Export as .pdf', 'Undo', 'Redo', 'Cut', 'Copy', 'Paste', 'Select all', 'Find all', 'Move up', 'Move down', 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'Header', 'Link', 'Unordered list', 'Ordered list', 'Inline code', 'Insert a table', 'Insert a picture', 'Insert codeblock', 'Insert a quote', 'Insert divider', 'Markdown-only', 'Split view', 'Live preview']
+        const messagesList = ['Create a new file', 'Open a file', 'Save your file', 'Export as .md', 'Export as .pdf', 'Undo', 'Redo', 'Cut', 'Copy', 'Paste', 'Select all', 'Find all', 'Move up', 'Move down', 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'Header', 'Link', 'Unordered list', 'Ordered list', 'Inline code', 'Insert a table', 'Insert a picture', 'Insert codeblock', 'Insert a quote', 'Insert divider', 'Markdown-only', 'Split view', 'Preview']
 
 
         // --- EVENT LISTENERS ---
@@ -2576,6 +2723,69 @@ export const EditorView = {
         viewPreview.addEventListener('click', () => {
             EditorView.toggleViewMode("livePreview")
         })
+
+        // --- LIGHT/DARK MODE ---
+        const modeToggle = document.getElementById('mode-toggle')
+
+        const savedMode = localStorage.getItem('site-mode') || 'light'
+        modeToggle.checked = savedMode === 'dark'
+        document.documentElement.setAttribute('data-mode', savedMode)
+
+        modeToggle.addEventListener('change', () => {
+            const mode = modeToggle.checked ? 'dark' : 'light'
+            document.documentElement.setAttribute('data-mode', mode)
+            localStorage.setItem('site-mode', mode)
+        })
+
+
+        // --- THEMES ---
+        const options = document.querySelectorAll('.theme-option')
+
+        // On page load, restore the saved theme
+        // localStorage persists data across page reloads.
+        // We fall back to 'default' if nothing is saved yet.
+        let savedTheme = localStorage.getItem('site-theme') || 'default'
+        applyTheme(savedTheme, true)
+
+        // -- Hover preview + click to save -- 
+        // Loop over every theme option and attach events.
+        options.forEach((option) => {
+            const theme = option.dataset.theme // read the data-theme="..." attribute
+
+            // - Preview on hover -
+            // mouseenter fires when the cursor enters the element
+            option.addEventListener('mouseenter', () => {
+                applyTheme(theme, false) // false = don't update the checkmark yet
+            })
+
+            // mouseleave fires when the cursor leaves the element
+            option.addEventListener('mouseleave', () => {
+                applyTheme(savedTheme, false) // revert to whatever was last saved
+            })
+
+            // - Save on click -
+            option.addEventListener('click', () => {
+                savedTheme = theme
+                localStorage.setItem('site-theme', theme) // persist to localStorage
+                applyTheme(theme, true)
+                // location.reload() // re-run the page so the saved theme loads cleanly
+            })
+        })
+
+        // Helper function — applyTheme(theme, updateActive)
+        // theme        : string, e.g. 'ocean'
+        // updateActive : boolean — whether to move the checkmark
+        function applyTheme (theme, updateActive) {
+            // Swap the data-theme attribute on <html>.
+            document.documentElement.setAttribute('data-theme', theme)
+
+            // Optionally move the .active class (checkmark) to the chosen option
+            if (updateActive) {
+                options.forEach((opt) => {
+                    opt.classList.toggle('active', opt.dataset.theme === theme)
+                })
+            }
+        }
         
 
         // --- SIDE MENU ---------------------------
@@ -2587,7 +2797,8 @@ export const EditorView = {
         const linksTab = document.getElementById('tab-links')
         const tagsTab = document.getElementById('tab-tags')
         const mdTab = document.getElementById('tab-md')
-        const tabsList = [explorerTab, tocTab, linksTab, tagsTab, mdTab]
+        const aboutTab = document.getElementById('tab-about')
+        const tabsList = [explorerTab, tocTab, linksTab, tagsTab, mdTab, aboutTab]
 
         // Tooltips
         const explorerTooltip = document.getElementById('tooltip-explorer')
@@ -2595,7 +2806,8 @@ export const EditorView = {
         const linksTooltip = document.getElementById('tooltip-links')
         const tagsTooltip = document.getElementById('tooltip-tags')
         const mdTooltip = document.getElementById('tooltip-md')
-        const tooltipsList = [explorerTooltip, tocTooltip, linksTooltip, tagsTooltip, mdTooltip]
+        const aboutTooltip = document.getElementById('tooltip-about')
+        const tooltipsList = [explorerTooltip, tocTooltip, linksTooltip, tagsTooltip, mdTooltip, aboutTooltip]
 
         // Tab Display
         const tabsDisplay = document.getElementById('tabs-display')
@@ -2604,8 +2816,9 @@ export const EditorView = {
         const tabWrapperLinks = document.getElementById('links-wrapper')
         const tabWrapperTags = document.getElementById('tags-wrapper')
         const tabWrapperMD = document.getElementById('md-wrapper')
-        const tabNamesList = ['explorer', 'toc', 'links', 'tags', 'md']
-        const tabWrappersList = [tabWrapperExplorer, tabWrapperToc, tabWrapperLinks, tabWrapperTags, tabWrapperMD]
+        const tabWrapperAbout = document.getElementById('about-wrapper')
+        const tabNamesList = ['explorer', 'toc', 'links', 'tags', 'md', 'about']
+        const tabWrappersList = [tabWrapperExplorer, tabWrapperToc, tabWrapperLinks, tabWrapperTags, tabWrapperMD, tabWrapperAbout]
 
         for (let i=0; i<tabsList.length; i++) {
             // --- TOOLTIPS ---
@@ -2655,6 +2868,8 @@ export const EditorView = {
             switch (tabName) {
                 case 'explorer':
                     tabWrapperExplorer.removeAttribute('data-is-hidden')
+                    EditorView.renderExplorerFilters()
+                    EditorView.renderExplorer()
                     break
                 case 'toc':
                     tabWrapperToc.removeAttribute('data-is-hidden')
@@ -2667,6 +2882,9 @@ export const EditorView = {
                     break
                 case 'md':
                     tabWrapperMD.removeAttribute('data-is-hidden')
+                    break
+                case 'about':
+                    tabWrapperAbout.removeAttribute('data-is-hidden')
                     break
             }
         }

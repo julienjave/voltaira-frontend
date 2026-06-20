@@ -3,6 +3,103 @@
 @use '../abstract/variables' as v;
 
 
+
+/* --- GENERAL -------------------------------------------------------------------- */
+
+input {
+    background-color: var(--input-area);
+    padding: 2px 3px;
+    font-size: 1rem;
+    border: 1px solid var(--input-area);
+    border-radius: 5px;
+    color: var(--text-alt);
+}
+
+.custom-dropdown-container {
+    position: relative;
+    width: 100%;
+    margin-top: 6px;
+    font-family: inherit;
+}
+
+details {
+    margin: 5px 0;
+    width: 100%;
+}
+
+summary {
+    font-size: 0.8rem;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--note-item-hover);
+    }
+}
+
+details::details-content {
+    @include m.flex-layout(column, flex-start, flex-start);
+}
+
+/* Trigger Box Container Style - Inherits native input styles nicely */
+.custom-dropdown-trigger {
+    @include m.flex-layout(row, space-between, center);
+    background-color: var(--input-area);
+    border: 1px solid var(--input-area);
+    color: var(--text-alt);
+    padding: 4px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.15s ease;
+}
+
+.trigger-caret svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--text-alt);
+    transition: transform 0.2s ease;
+}
+
+/* Floating Population Menu Options Panel Wrapper */
+.custom-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    background-color: var(--input-area);
+    border: 1px solid var(--input-area);
+    border-radius: 5px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    z-index: 999;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Interactive Option Rows Elements */
+.custom-dropdown-option {
+    padding: 4px 10px;
+    color: var(--text-alt);
+    cursor: pointer;
+    transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+.custom-dropdown-option:hover {
+    background-color: var(--note-item-hover);
+}
+
+.custom-dropdown-option.is-selected {
+    background-color: var(--item-active);
+    font-weight: 500;
+}
+
+/* Framework utility class to hide elements */
+.is-hidden {
+    display: none !important;
+}
+
+
 /* --- PANELS --------------------------------------------------------------------- */
 
 .splash-panel, .canvas-panel {
@@ -14,9 +111,31 @@
 }
 
 
-/* --- MODAL WINDOWS -------------------------------------------------------------- */
+/* --- SCROLLBAR -------------------------------------------------------------- */
 
+/* 1. The total width/height of the scrollbar wrapper */
+::-webkit-scrollbar {
+    width: 6px;  /* Width for vertical scrollbars */
+    height: 6px; /* Height for horizontal scrollbars */
+}
 
+/* 2. The background track behind the draggable bar */
+::-webkit-scrollbar-track {
+    background: #d4d4d4; 
+    border-radius: 4px;
+}
+
+/* 3. The actual draggable handle bar itself */
+::-webkit-scrollbar-thumb {
+    background: var(--accent2); 
+    border-radius: 4px;
+    border: 1px solid var(--text); /* Creates a nice padding effect around the thumb */
+}
+
+/* 4. Hover effect when the user moves their mouse over the bar */
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent1); 
+}
 
 
 /* --- SPLASH SCREEN -------------------------------------------------------------- */
@@ -118,6 +237,7 @@
 
 .splash-note-item {
     @include m.flex-layout(row, flex-start, center);
+    gap: 3px;
     width: 100%;
     cursor: pointer;
 
@@ -163,7 +283,9 @@
 
 .modal-card {
     @include m.flex-layout;
-    width: 400px;
+    min-width: 400px;
+    max-width: 500px;
+    width: fit-content;
     height: fit-content;
     background-color: var(--accent1);
     border-radius: 5px;
@@ -172,13 +294,54 @@
     h3 {
         color: var(--text);
     }
+
+    &.danger {
+        background-color: var(--red);
+        border: 1px solid #ffffff;
+    }
 }
 
 .modal-info-message {
     @include m.flex-layout(row, center, center);
-    background-color: #00ffcc;
     border-radius: 5px;
     padding: 5px 20px;
+    width: 100%;
+
+    &.theme-warning {
+        background-color: #ffe1a4;
+        color: #e08300;
+
+        svg {
+            fill: #e08300;
+        }
+    }
+
+    &.theme-error {
+        background-color: #ff8080;
+        color: #ff2525;
+
+        svg {
+            fill: #ff2525;
+        }
+    }
+
+    &.theme-info {
+        background-color: #8dddff;
+        color: #009fe3;
+
+        svg {
+            fill: #009fe3;
+        }
+    }
+
+    &.theme-success {
+        background-color: #00ffcc;
+        color: #00af5b;
+
+        svg {
+            fill: #00af5b;
+        }
+    }
 }
 
 .modal-info-icon {
@@ -200,6 +363,39 @@
     width: 100%;
 }
 
+#editor-modal-form {
+    @include m.flex-layout;
+    width: 100%;
+}
+
+.modal-fields-group {
+    @include m.flex-layout(column, center, flex-start);
+    color: var(--text);
+    gap: 3px;
+    width: 100%;
+
+    label, input, select {
+        display: block;
+        width: stretch;
+        margin: 3px;
+        font-family: 'Quicksand', sans-serif;
+    }
+}
+
+.modal-notes-list {
+    background-color: #ffffff;
+    border-radius: 5px;
+    color: var(--text-alt);
+    width: 100%;
+    margin: 10px auto;
+}
+
+#editor-modal-content {
+    @include m.flex-layout;
+    gap: 10px;
+    width: 100%;
+}
+
 .btn-text, .btn-primary {
     @include m.flex-layout(row, center, center);
     gap: 10px;
@@ -208,6 +404,8 @@
     font-size: 1.1rem;
     color: var(--text);
     padding: 2px 5px;
+    margin-bottom: 5px;
+    cursor: pointer;
 
     svg {
         width: 18px;
@@ -240,14 +438,29 @@
     }
 }
 
+.open-note-item {
+    @include m.flex-layout(row, flex-start, center);
+    gap: 3px;
+    width: 100%;
+    cursor: pointer;
+
+    span {
+        display: inline-block;
+    }
+
+    &:hover {
+        background-color: var(--note-item-hover);
+    }
+}
+
 
 /* --- MAIN MENU ------------------------------------------------------------------ */
 
 #logo-container {
-    color: var(--accent2);
+    color: var(--logo);
 
     svg {
-        fill: var(--accent2);
+        fill: var(--logo);
     }
 
     .app-name {
@@ -286,6 +499,133 @@
     font-size: 0.8rem;
 }
 
+.module-subunit-option{
+    &.for-later {
+        display: none;
+    }
+}
+
+/* -- Light/Dark Mode -- */
+
+#mode-submodule {
+    svg {
+        width: 25px;
+        height: 25px;
+        fill: var(--text);
+    }
+}
+
+#mode-toggle {
+    appearance: none; /* hides the default checkbox */
+    width: 38px;
+    height: 20px;
+    position: relative;
+    cursor: pointer;
+    background-color: var(--accent2);
+    border: 1px solid var(--text);
+    border-radius: 20px;
+    transition: background-color 0.25s, border-color 0.25s;
+}
+
+/* - The sliding circle — drawn with ::before pseudo-element - */
+#mode-toggle::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    top: 0;
+    left: 0;
+    background-color: var(--toggle);
+    border: 2px solid var(--accent2);
+    border-radius: 50%;
+    transition: background-color 0.25s, border-color 0.25s, transform 0.25s;
+}
+
+/* When checked, slide the circle to the right */
+#mode-toggle:checked::before {
+    transform: translateX(18px);
+}
+
+/* -- Color Palette Option -- */
+
+.theme-wrapper {
+    @include m.flex-layout(column, flex-start, flex-start);
+    width: 100%;
+}
+
+.theme-option {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: left;
+    gap: 5px;
+    padding: 2px 5px;
+    width: 100%;
+    cursor: pointer;
+
+    &.active {
+        font-weight: 600;
+    }
+}
+
+.theme-option:hover {
+    background-color: var(--accent2);
+    transition: background-color 0.25s, color 0.25s;
+}
+
+.swatch {
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--text);
+    border-radius: 20px;
+}
+
+/* - Checkmark shown only on the active/saved theme - */
+.checkmark {
+    margin-left: 10px;
+    color: var(--text);
+    font-weight: 500;
+    opacity: 0;
+    transition: color 0.25s;
+}
+
+.theme-option.active .checkmark {
+    opacity: 1;
+}
+
+.profile-options {
+    display: none;
+    background-color: var(--red);
+    border: 1px solid var(--text);
+    border-radius: 0 5px 5px 5px;
+
+    &.is-open {
+        @include m.flex-layout(column, flex-start, center);
+    }
+}
+
+#delete-account-btn {
+    @include m.flex-layout(row, center, center);
+    gap: 5px;
+    background-color: transparent;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    color: var(--text);
+    width: 100%;
+    padding: 4px 5px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--red-hover);
+    }
+
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
 
 /* --- SIDE MENU ------------------------------------------------------------------ */
 
@@ -298,13 +638,14 @@
 
 .tab-container {
     @include m.flex-layout(column, flex-start, flex-start);
-    background-color: #ffffff;
-    border: 1px solid var(--text);
+    background-color: var(--input-area);
+    border: 1px solid var(--input-area);
     border-radius: 5px;
     font-size: 0.8rem;
     width: 100%;
     height: stretch;
     overflow-y: auto;
+    color: var(--text-alt);
 }
 
 .tab-title {
@@ -342,15 +683,24 @@
 }
 
 .explorer-nav-item {
+    @include m.flex-layout(row, flex-start, center);
+    gap: 3px;
     width: 100%;
     background: transparent;
     cursor: pointer;
 }
 
+.nav-item-icon, .link-icon {
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
 .explorer-delete-note-btn {
     @include m.flex-layout;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     cursor: pointer;
 
     svg {
@@ -380,6 +730,8 @@
 }
 
 .link-item {
+    @include m.flex-layout(row, flex-start, center);
+    gap: 3px;
     width: 100%;
     padding: 2px;
     cursor: pointer;
@@ -423,14 +775,21 @@
 }
 
 .tag-management-pool {
-    background-color: #ffffff;
-    border: 1px solid #ffffff;
+    background-color: var(--input-area);
+    color: var(--text-alt);
+    border: 1px solid var(--input-area);
     border-radius: 5px;
     font-size: 0.8rem;
     width: 100%;
     height: 3.5rem;
     padding: 2px 3px;
     overflow-y: auto;
+}
+
+#new-tag-creation {
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px dotted var(--text);
 }
 
 .tag-creation-form {
@@ -444,21 +803,33 @@
     }
 
     input {
-        background-color: #ffffff;
-        border: 1px solid var(--text);
-        border-radius: 5px;
-        padding: 2px 3px;
         font-size: 0.8rem;
+        width: 100%;
+    }
+
+    #new-tag-name-input {
+        padding: 2px 3px;
+        font-size: 1em;
     }
 
     button {
+        @include m.flex-layout(row, center, center);
         background-color: var(--btn);
         border: 1px solid var(--text);
         border-radius: 5px;
         color: var(--text);
         font-size: 1rem;
+        gap: 5px;
         margin-top: 5px;
+        padding: 4px;
+        width: 100%;
         cursor: pointer;
+
+        svg {
+            width: 18px;
+            height: 18px;
+            fill: var(--text);
+        }
 
         &:hover {
             background-color: var(--btn-hover);
@@ -509,24 +880,6 @@
     color: var(--text);
 }
 
-.tag-creation-form {
-    @include m.flex-layout;
-    width: 100%;
-
-    input {
-        width: 100%;
-    }
-
-    #new-tag-name-input {
-        padding: 2px 3px;
-        font-size: 1em;
-    }
-
-    button {
-        width: 100%;
-    }
-}
-
 #md-container {
     font-size: 0.8rem;
 }
@@ -541,7 +894,11 @@
     margin: 8px 3px 3px 3px;
     align-self: center;
     text-decoration: underline;
-    font-size: 1rem;
+    font-size: 0.9rem;
+}
+
+.md-point {
+    margin-top: 5px;
 }
 
 .md-syntax-group {
@@ -567,6 +924,36 @@
     font-style: italic;
     align-self: center;
     margin-bottom: 2px;
+}
+
+.about-title {
+    font-size: 1rem;
+    font-weight: 700;
+    align-self: center;
+    margin: 5px auto;
+}
+
+.about-subtitle {
+    font-size: 0.9rem;
+    font-weight: 600;
+    align-self: center;
+    margin: 10px auto 3px auto;
+}
+
+.about-article {
+    padding: 0 2px;
+}
+
+.about-footer {
+    margin: 20px auto;
+    font-style: italic;
+}
+
+.about-footer-badges {
+    @include m.flex-layout;
+    gap: 3px;
+    font-size: 0.7rem;
+    margin-top: 10px;
 }
 
 
@@ -696,3 +1083,5 @@
         background: transparent;
     }
 }
+
+

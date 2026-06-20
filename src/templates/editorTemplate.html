@@ -1,3 +1,20 @@
+<!--
+    Copyright 2026 Julien Javelaud
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+
 <div class="editor-container">
     <!-- WELCOME SPLASH SCREEN -->
     <section id="welcome-splash-shell" class="splash-panel">
@@ -10,8 +27,7 @@
                     </div> 
                 </div>
                 <div class="splash-instructions">
-                    <span class="splash-greetings">Hi <span id="splash-username">User</span>,</span>
-                    <span>It's nice to see you!</span>
+                    <span class="splash-greetings">Hi, It's nice to see you!</span>
                     <span>What would you like to do today?</span>
                 </div>
             </div>
@@ -63,14 +79,26 @@
             <div id="header-main">
                 <!-- Main options -->
                 <div class="main-menu">
-                    <div class="menu-option" id="menu-file" data-is-selected>File</div>
-                    <div class="menu-option" id="menu-tools">Design</div>
-                    <div class="menu-option" id="menu-settings">Settings</div>
-                    <div class="menu-option" id="menu-help">Help</div>
+                    <div class="menu-option" id="menu-file" data-is-selected>
+                        <svg><use href="#icon-file-main"/></svg>
+                        File
+                    </div>
+                    <div class="menu-option" id="menu-tools">
+                        <svg><use href="#icon-design"/></svg>
+                        Design
+                    </div>
+                    <div class="menu-option" id="menu-settings">
+                        <svg><use href="#icon-settings"/></svg>
+                        Settings
+                    </div>
                     <div class="menu-dropdown" id="menu-profile">
+                        <svg><use href="#icon-profile"/></svg>
                         Profile
                         <div class="profile-options" id="profile-options">
-                            <button id="delete-account-btn">Delete account</button>
+                            <button id="delete-account-btn">
+                                <svg><use href="#icon-skull"/></svg>
+                                Delete account
+                            </button>
                         </div>
                     </div>
                     <button id="logout-btn" class="logout-btn">
@@ -120,7 +148,7 @@
                                         <div class="module-subunit-option" id="file-export-md">
                                             <svg><use href="#icon-export-md"/></svg>
                                         </div>
-                                        <div class="module-subunit-option" id="file-export-pdf">
+                                        <div class="module-subunit-option for-later" id="file-export-pdf">
                                             <svg><use href="#icon-export-pdf"/></svg>
                                         </div>
                                     </div>
@@ -303,12 +331,50 @@
                         <div class="sub-module">
                             <span class="module-title">MODE</span>
                             <div class="module-content">
+                                <div class="module-unit">
+                                    <!-- --- Light/Dark Mode --- -->
+                                    <span class="module-unit-title">Light/Dark Mode</span>
+                                    <div class="module-subunit" id="mode-submodule">
+                                        <svg><use href="#icon-light"/></svg>
+                                        <input type="checkbox" id="mode-toggle" />
+                                        <svg><use href="#icon-dark"/></svg>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <!-- THEME MODULE -->
-                        <div class="sub-module right-module">
+                        <div class="sub-module middle-module">
                             <span class="module-title">THEME</span>
                             <div class="module-content">
+                                <div class="module-unit">
+                                    <div class="module-subunit">
+                                        <!-- --- Color Palette --- -->
+                                        <div class="theme-wrapper">
+                                            <div class="theme-option active" data-theme="default">
+                                                <div class="swatch" style="background-color: #3964a3;"></div>
+                                                Voltaira <em style="font-size: 0.7em;">(Default)</em>
+                                                <span class="checkmark">✓</span>
+                                            </div>
+                                            <div class="theme-option" data-theme="curcuma">
+                                                <div class="swatch" style="background-color: #ffaf02;"></div>
+                                                Curcuma
+                                                <span class="checkmark">✓</span>
+                                            </div>
+                                        </div>
+                                        <div class="theme-wrapper">
+                                            <div class="theme-option" data-theme="vanille-fraise">
+                                                <div class="swatch" style="background-color: #ff2baa;"></div>
+                                                Vanille-Fraise
+                                                <span class="checkmark">✓</span>
+                                            </div>
+                                            <div class="theme-option" data-theme="lime">
+                                                <div class="swatch" style="background-color: #00a216;"></div>
+                                                Lime
+                                                <span class="checkmark">✓</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <!-- VIEW MODULE -->
@@ -374,8 +440,12 @@
                         <div class="tooltip" id="tooltip-tags">Tags & Filtering</div>
                     </div>
                     <div class="tab-option" id="tab-md">
-                        <svg id="svg-md"><use href="#icon-md"/></svg>
-                        <div class="tooltip" id="tooltip-md">Markdown Common Tags</div>
+                        <svg id="svg-md"><use href="#icon-question"/></svg>
+                        <div class="tooltip" id="tooltip-md">Help</div>
+                    </div>
+                    <div class="tab-option" id="tab-about">
+                        <svg id="svg-md"><use href="#icon-info"/></svg>
+                        <div class="tooltip" id="tooltip-about">About</div>
                     </div>
                 </div>
                 <!-- TAB DISPLAY -->
@@ -415,85 +485,154 @@
                             <div id="manager-global-tags" class="tag-management-pool"></div>
                             <span class="subtitle">Assigned to Note</span>
                             <div id="manager-note-tags" class="tag-management-pool"></div>
-                            <span class="subtitle">Create New Tag</span>
+                            <span class="subtitle" id="new-tag-creation">Create New Tag</span>
                             <div class="tag-creation-form">
                                 <input type="text" id="new-tag-name-input" placeholder="tag-name" />
                                 <label for="new-tag-color-input">Assign color:</label>
                                 <input type="color" id="new-tag-color-input" value="#00AAFF" />
-                                <button id="submit-new-tag-btn">Create</button>
+                                <button id="submit-new-tag-btn">
+                                    <svg><use href="#icon-tag"/></svg>
+                                    Create
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <!-- -- Markdown Common Tags -- -->
+                    <!-- -- Help -- -->
                     <div class="tab-wrapper" id="md-wrapper" data-is-hidden="true">
-                        <div class="tab-title">Markdown Tags</div>
+                        <div class="tab-title">Help</div>
                         <div class="tab-container" id="md-container">
-                            <div class="md-intro">You'll find here some of the most common tags/syntax used in Markdown.</div>
-                            <!-- TEXT FORMATTING -->
-                            <span class="md-category">Text Formatting</span>
-                            <div class="md-syntax-group">
-                                <span class="md-element">Heading:</span>
-                                <span class="md-syntax"># H1</span> up to <span class="md-syntax"># H3</span>
+                            <details>
+                                <summary>
+                                    <span>What is a Ghost Note?</span>
+                                </summary>
+                                <div class="md-intro">
+                                    A <strong>Ghost Note</strong> is a placeholder for a file that does not exist in your workspace database yet, but is already being referenced or linked by other notes.
+                                </div>
+                                <span class="md-category">How it works</span>
+                                <div class="md-point">
+                                    <strong>Visual Indicator:</strong> Ghost notes appear inside your explorer or file tree with a dimmed, translucent, or specialized icon style to show they are empty shells.
+                                </div>
+                                <div class="md-point">
+                                    <strong>Safe Routing:</strong> You can click on a ghost note to look at its reference connections safely without breaking your editor view.
+                                </div>
+                                <div class="md-point">
+                                    <strong>Materialization:</strong> The exact moment you type your first character into a ghost note's content editor window, the system automatically registers it and saves a permanent record to the database.
+                                </div>
+                                <div class="md-intro">
+                                    <em>Tip: This allows you to map out complex note networks and structural hierarchies ahead of time without needing to manually generate empty files first!</em>
+                                </div>
+                            </details>
+
+                            <details>
+                                <summary>
+                                    <span>Workspace & Organization</span>
+                                </summary>
+                                <span class="md-category">File Synchronization</span>
+                                <div class="md-point">
+                                    There is a "Save" button but the editor automatically synchronizes your changes with the database as you type. Your hard work is always protected.
+                                </div>
+                                <span class="md-category">Tag Management</span>
+                                <div class="md-point">
+                                    Use the Tag Panel to create globally available categories. Deleting a tag from the workspace will automatically strip it out of every single note in your vault instantly to keep your data clean.
+                                </div>
+                                <span class="md-category">Bi-directional Explorer</span>
+                                <div class="md-point">
+                                    Clicking on notes in your sidebar explorer loads them instantly. If a note is currently blank, it is treated as a safe local canvas until content is typed.
+                                </div>
+                            </details>
+
+                            <details>
+                                <summary>Markdown Quick-Reference</summary>
+                                <div class="md-intro">You'll find here some of the most common tags/syntax used in Markdown.</div>
+                                <!-- TEXT FORMATTING -->
+                                <span class="md-category">Text Formatting</span>
+                                <div class="md-syntax-group">
+                                    <span class="md-element">Heading:</span>
+                                    <span class="md-syntax"># H1</span> up to <span class="md-syntax"># H3</span>
+                                </div>
+                                <div class="md-note">Space after <span class="md-syntax">#</span> is required</div>
+                                <div class="md-syntax-group">
+                                    <span class="md-element">Bold:</span>
+                                    <span class="md-syntax">**text**</span>
+                                </div>
+                                <div class="md-syntax-group">
+                                    <span class="md-element">Italic:</span>
+                                    <span class="md-syntax">*text*</span> or <span class="md-syntax">_text_</span>
+                                </div>
+                                <div class="md-syntax-group">
+                                    <span class="md-element">Strikethrough:</span>
+                                    <span class="md-syntax">~~text~~</span>
+                                </div>
+                                <div class="md-syntax-group">
+                                    <span class="md-element">Inline code:</span>
+                                    <span class="md-syntax">`code`</span>
+                                </div>
+                                <!-- LISTS & LAYOUT -->
+                                <span class="md-category">Lists & Layout</span>
+                                <div class="md-syntax-group">
+                                    <span class="md-element">Bullet list:</span>
+                                    <span class="md-syntax">* item</span> or <span class="md-syntax">- item</span>
+                                </div>
+                                <div class="md-syntax-group">
+                                    <span class="md-element">Numbered list:</span>
+                                    <span class="md-syntax">1. item</span>
+                                </div>
+                                <div class="md-note">Chronological list</div>
+                                <div class="md-syntax-group">
+                                    <span class="md-element">Blockquote:</span>
+                                    <span class="md-syntax">> quote</span>
+                                </div>
+                                <div class="md-note">Creates an indented callout box</div>
+                                <div class="md-syntax-group">
+                                    <span class="md-element">Divider line:</span>
+                                    <span class="md-syntax">---</span>
+                                </div>
+                                <div class="md-note">Inserts a horizontal rule</div>
+                                <!-- LINKS & MEDIA -->
+                                <span class="md-category">Links & Media</span>
+                                <div class="md-syntax-group">
+                                    <span class="md-element">Links:</span>
+                                    <span class="md-syntax">[Title](url)</span>
+                                </div>
+                                <div class="md-note">[Google](https://google.com)</div>
+                                <div class="md-syntax-group">
+                                    <span class="md-element">Image:</span>
+                                    <span class="md-syntax">![Alt text](url)</span>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
+                    <!-- -- About -- -->
+                    <div class="tab-wrapper" id="about-wrapper" data-is-hidden="true">
+                        <div class="tab-title">About</div>
+                        <div class="tab-container" id="about-container">
+                            <span class="about-title">About Voltaira</span>
+                            <div class="about-article">
+                                Voltaira is a lightweight, distraction-free markdown text editor designed for non-linear thinking.<br>
+                                Built for developers, writers, and researchers, it strips away the bloat of traditional word processors, giving you a fluid canvas where ideas can be captured, tagged, and connected instantly.
                             </div>
-                            <div class="md-note">Space after <span class="md-syntax">#</span> is required</div>
-                            <div class="md-syntax-group">
-                                <span class="md-element">Bold:</span>
-                                <span class="md-syntax">**text**</span>
+                            <span class="about-subtitle">Minimalist Friction</span>
+                            <div class="about-article">
+                                We believe you shouldn't have to navigate heavy menus just to jot down a thought. Voltaira features an auto-saving, real-time synchronization engine.<br>
+                                You type, we handle the rest.
                             </div>
-                            <div class="md-syntax-group">
-                                <span class="md-element">Italic:</span>
-                                <span class="md-syntax">*text*</span> or <span class="md-syntax">_text_</span>
+                            <span class="about-subtitle">Structured Anticipation</span>
+                            <div class="about-article">
+                                Through the Ghost Note system, Voltaira allows your workspace to grow organically. You can map out conceptual placeholders and structures in your workspace file explorer before the physical notes are even written.
                             </div>
-                            <div class="md-syntax-group">
-                                <span class="md-element">Strikethrough:</span>
-                                <span class="md-syntax">~~text~~</span>
+                            <span class="about-subtitle">Clean Data Integrity</span>
+                            <div class="about-article">
+                                Organization shouldn't leave a trail of broken references. With automated backend cascading cleanup, managing global tags updates your workspace documents safely and instantly.
                             </div>
-                            <div class="md-syntax-group">
-                                <span class="md-element">Inline code:</span>
-                                <span class="md-syntax">`code`</span>
+                            <div class="about-footer">
+                                Developed as an advanced full-stack web application project exploring relational document schemas, isolated event-driven architectures, and semantic DOM control.
+                                <div class="about-footer-badges">
+                                    <span class="about-version">Version 1.0.0</span>
+                                    <span class="about-copyright">&copy; 2026 Julien Javelaud / Voltaira.</span>
+                                    <span class="about-copyright">All rights reserved.</span>
+                                </div>
                             </div>
-                            <!-- LISTS & LAYOUT -->
-                            <span class="md-category">Lists & Layout</span>
-                            <div class="md-syntax-group">
-                                <span class="md-element">Bullet list:</span>
-                                <span class="md-syntax">* item</span> or <span class="md-syntax">- item</span>
-                            </div>
-                            <div class="md-syntax-group">
-                                <span class="md-element">Numbered list:</span>
-                                <span class="md-syntax">1. item</span>
-                            </div>
-                            <div class="md-note">Chronological list</div>
-                            <div class="md-syntax-group">
-                                <span class="md-element">Task list:</span>
-                                <span class="md-syntax">- [] todo</span> or <span class="md-syntax">- [x] done</span>
-                            </div>
-                            <div class="md-note">Interactive check-boxes</div>
-                            <div class="md-syntax-group">
-                                <span class="md-element">Blockquote:</span>
-                                <span class="md-syntax">> quote</span>
-                            </div>
-                            <div class="md-note">Creates an indented callout box</div>
-                            <div class="md-syntax-group">
-                                <span class="md-element">Divider line:</span>
-                                <span class="md-syntax">---</span>
-                            </div>
-                            <div class="md-note">Inserts a horizontal rule</div>
-                            <!-- LINKS, MEDIA & CODE BLOCKS -->
-                            <span class="md-category">Links, Media & Code Blocks</span>
-                            <div class="md-syntax-group">
-                                <span class="md-element">Links:</span>
-                                <span class="md-syntax">[Title](url)</span>
-                            </div>
-                            <div class="md-note">[Google](https://google.com)</div>
-                            <div class="md-syntax-group">
-                                <span class="md-element">Image:</span>
-                                <span class="md-syntax">![Alt text](url)</span>
-                            </div>
-                            <div class="md-syntax-group">
-                                <span class="md-element">Code Block:</span>
-                                <span class="md-syntax">``` multiline code ```</span>
-                            </div>
-                            <div class="md-note">You can precise the language right after the first <span class="md-syntax">```</span></div>
                         </div>
                     </div>
                 </div>
@@ -509,7 +648,7 @@
                 </div>
                 <!-- PREVIEW RENDER WINDOW (Hidden by default) -->
                 <div class="note-viewer" id="view-preview" data-is-hidden="true">
-                    <div class="note-container" id="note-container">
+                    <div class="note-container" id="preview-container">
                         <span class="note-title" id="preview-note-title"></span>
                         <div id="note-preview-container" class="preview-canvas-container"></div>
                     </div>
@@ -519,12 +658,15 @@
     </section>
     <!-- Single layout container repurposed for ALL modal form prompts -->
     <div id="editor-modal-overlay" class="modal-overlay is-hidden">
-        <div class="modal-card">
+        <div class="modal-card" id="editor-modal-card">
             <h3 id="editor-modal-title">Insert Resource</h3>
             <form id="editor-modal-form">
                 <div id="editor-modal-fields" class="modal-fields-group"></div>
                 <div class="modal-actions-toolbar">
-                    <button type="submit" id="editor-modal-submit" class="btn-primary">Confirm</button>
+                    <button type="submit" id="editor-modal-submit" class="btn-primary">
+                        <svg><use href="#icon-confirm"/></svg>
+                        Confirm
+                    </button>
                     <button type="button" id="editor-modal-cancel" class="btn-text">
                         <svg><use href="#icon-error"/></svg>
                         Cancel
@@ -544,7 +686,7 @@
                     </div>
                     <div class="modal-info-text" id="modal-info-text"></div>
                 </div>
-                <button type="button" id="editor-modal-ok-btn" class="btn-text">Ok</button>
+                <button type="button" id="editor-modal-ok-btn" class="btn-text">Ok, thanks</button>
             </div>
         </div>
     </div>
